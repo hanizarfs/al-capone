@@ -16,7 +16,8 @@ if (!isset($_GET['room_id']) || empty($_GET['room_id'])) {
 $room_id = $_GET['room_id'];
 
 // Use a prepared statement to prevent SQL injection and fetch the selected room's details
-$stmt = $mysqli->prepare("SELECT id, name, price, description FROM rooms WHERE id = ?");
+// We also get the availability to use as a max value for the number of rooms input.
+$stmt = $mysqli->prepare("SELECT id, name, price, description, availability FROM rooms WHERE id = ?");
 $stmt->bind_param("s", $room_id);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -26,7 +27,6 @@ if ($result->num_rows === 1) {
     $room = $result->fetch_assoc();
 } else {
     // No room found with that ID. Redirect with an error.
-    // You can set an error message here.
     header('Location: rooms.php');
     exit;
 }
@@ -103,14 +103,14 @@ $mysqli->close();
                             <hr>
 
                             <!-- Booking Form -->
-                            <form action="invoices.php" method="post" id="booking-form">
+                            <form action="invoice.php" method="post" id="booking-form">
                                 <!-- Hidden fields to pass crucial data to the next page -->
                                 <input type="hidden" name="room_id" value="<?= htmlspecialchars($room['id']); ?>">
                                 <input type="hidden" name="room_name" value="<?= htmlspecialchars($room['name']); ?>">
                                 <input type="hidden" name="price_per_night" value="<?= htmlspecialchars($room['price']); ?>">
-                                <input type="hidden" name="total_nights" id="form-total-nights" value="0">
-                                <input type="hidden" name="total_price" id="form-total-price" value="0">
-
+                                <input type="hidden" name="total_nights" id="form-total-nights" value="1">
+                                <input type="hidden" name="total_price" id="form-total-price" value="<?= htmlspecialchars($room['price']); ?>">
+                                
                                 <h4 class="mt-4 mb-3">Select Your Dates</h4>
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
@@ -145,16 +145,16 @@ $mysqli->close();
                                     <hr>
                                     <div class="d-flex justify-content-between">
                                         <p class="mb-1 fw-semibold">Quantity (Nights):</p>
-                                        <p class="mb-1" id="summary-nights">--</p>
+                                        <p class="mb-1" id="summary-nights">1</p>
                                     </div>
                                     <div class="d-flex justify-content-between">
                                         <p class="mb-1 fw-semibold">Subtotal:</p>
-                                        <p class="mb-1" id="summary-subtotal">--</p>
+                                        <p class="mb-1" id="summary-subtotal">Rp <?= number_format($room['price'], 0, ',', '.'); ?></p>
                                     </div>
                                     <hr>
                                     <div class="d-flex justify-content-between align-items-center">
                                         <p class="mb-0 fw-bold fs-5">Total Price:</p>
-                                        <p class="mb-0 fw-bold fs-5 text-primary" id="summary-total">--</p>
+                                        <p class="mb-0 fw-bold fs-5 text-primary" id="summary-total">Rp <?= number_format($room['price'], 0, ',', '.'); ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -167,8 +167,7 @@ $mysqli->close();
 
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
-
-        <!-- Main JS (for dark mode toggle, etc.) -->
+        <!-- Main JS -->
         <script src="./assets/js/main.js"></script>
 
         <!-- Custom JS for Price Calculation -->
@@ -182,54 +181,56 @@ $mysqli->close();
                 const formTotalNights = document.getElementById('form-total-nights');
                 const formTotalPrice = document.getElementById('form-total-price');
 
-                // Get the price per night from the PHP variable
                 const pricePerNight = <?= (float)$room['price']; ?>;
 
-                // Set minimum date for check-in to today
-                const today = new Date().toISOString().split('T')[0];
-                checkinInput.setAttribute('min', today);
+                const today = new Date();
+                const todayString = today.toISOString().split('T')[0];
+                checkinInput.setAttribute('min', todayString);
+                checkinInput.value = todayString;
+
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const tomorrowString = tomorrow.toISOString().split('T')[0];
+                checkoutInput.setAttribute('min', tomorrowString);
+                checkoutInput.value = tomorrowString;
 
                 function updateBookingSummary() {
                     const checkinDate = new Date(checkinInput.value);
                     const checkoutDate = new Date(checkoutInput.value);
 
                     if (checkinInput.value && checkoutInput.value && checkoutDate > checkinDate) {
-                        // Calculate the difference in time (in milliseconds)
                         const timeDiff = checkoutDate.getTime() - checkinDate.getTime();
-                        
-                        // Convert milliseconds to days (nights)
                         const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
-                        
                         const subtotal = nights * pricePerNight;
 
-                        // Display the calculated values
                         summaryNights.textContent = nights;
                         summarySubtotal.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
                         summaryTotal.textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
 
-                        // Update the hidden form fields
                         formTotalNights.value = nights;
                         formTotalPrice.value = subtotal;
-
                     } else {
-                        // Reset if dates are invalid
-                        summaryNights.textContent = '--';
-                        summarySubtotal.textContent = '--';
-                        summaryTotal.textContent = '--';
-                        formTotalNights.value = 0;
-                        formTotalPrice.value = 0;
+                        summaryNights.textContent = '1';
+                        summarySubtotal.textContent = 'Rp ' + pricePerNight.toLocaleString('id-ID');
+                        summaryTotal.textContent = 'Rp ' + pricePerNight.toLocaleString('id-ID');
+                        formTotalNights.value = 1;
+                        formTotalPrice.value = pricePerNight;
                     }
                 }
 
-                // Add event listeners to both date inputs
                 checkinInput.addEventListener('change', function() {
-                    // Set minimum date for checkout to be one day after check-in
                     const nextDay = new Date(checkinInput.value);
                     nextDay.setDate(nextDay.getDate() + 1);
                     checkoutInput.setAttribute('min', nextDay.toISOString().split('T')[0]);
+                    if (new Date(checkoutInput.value) <= new Date(checkinInput.value)) {
+                        checkoutInput.value = nextDay.toISOString().split('T')[0];
+                    }
                     updateBookingSummary();
                 });
                 checkoutInput.addEventListener('change', updateBookingSummary);
+
+                // Initial calculation on page load
+                updateBookingSummary();
             });
         </script>
     </body>
