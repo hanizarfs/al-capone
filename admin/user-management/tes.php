@@ -2,16 +2,16 @@
 session_start();
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 
 if ($_SESSION['user_status'] == 1) {
-    header('location: ../index.php');
+    header('location: ../../index.php');
     exit;
 }
 
-require_once('../config.php');
+require_once('../../config.php');
 
 $user_id = $_SESSION['user_id'];
 
@@ -26,7 +26,7 @@ $mysqli->close();
 
 if (!$user) {
     session_destroy();
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 ?>
@@ -37,7 +37,7 @@ if (!$user) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard | Al Capone</title>
-    <link rel="icon" type="image/x-icon" href="../assets/img/Logo.webp" />
+    <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" />
@@ -46,14 +46,78 @@ if (!$user) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../../assets/css/style.css" />
 
+    <!-- Style -->
+    <style>
+        body {
+            height: 100%;
+        }
+
+        aside {
+            /* border: 1px yellow solid; */
+            position: fixed;
+            overflow: auto;
+            height: calc(100vh - 12px);
+            justify-content: flex-start;
+            align-self: flex-start;
+        }
+
+        nav {
+            position: sticky;
+        }
+
+        main {
+            position: relative;
+            overflow: visible;
+            margin-left: auto;
+            justify-content: flex-end;
+            align-self: flex-end;
+        }
+
+        #sidebarshow {
+            display: none;
+        }
+
+        .b-example-divider {
+            width: 100%;
+            height: 3rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            border: solid rgba(0, 0, 0, 0.15);
+            border-width: 1px 0;
+            box-shadow: inset 0 0.5em 1.5em rgba(0, 0, 0, 0.1), inset 0 0.125em 0.5em rgba(0, 0, 0, 0.15);
+        }
+
+        .b-example-vr {
+            flex-shrink: 0;
+            width: 1.5em;
+            height: 100vh;
+        }
+
+        .bi {
+            vertical-align: -0.125em;
+            fill: currentColor;
+        }
+
+        @media screen and (max-width: 992px) {
+            #sidebarshow {
+                display: inline;
+            }
+
+            #sidebartoggle {
+                display: none;
+            }
+        }
+
+        #sidebar button:hover {
+            background: darkblue;
+        }
+    </style>
 </head>
 
 <body>
-
     <!-- Aside -->
-    <?php include_once __DIR__ . '/sidebar.php'; ?>
+    <?php include_once __DIR__ . '/../sidebar.php'; ?>
     <!-- End of Aside -->
 
     <main class="col-lg-10" id="main">
@@ -146,7 +210,7 @@ if (!$user) {
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header">
-            <a href="../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
+            <a href="../../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body mt-0">
@@ -175,7 +239,7 @@ if (!$user) {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Main JS -->
-    <script src="../assets/js/main.js"></script>
+    <script src="../../assets/js/main.js"></script>
 
     <script>
         // Get the current URL path (without the base URL)
