@@ -1,3 +1,35 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('location: ../login.php'); 
+    exit;
+}
+
+if ($_SESSION['user_status'] == 1) {
+    header('location: ../index.php'); 
+    exit;
+}
+
+require_once('../config.php');
+
+$user_id = $_SESSION['user_id'];
+
+$stmt = $mysqli->prepare("SELECT id, username, email FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id); 
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc(); 
+
+$stmt->close();
+$mysqli->close();
+
+if (!$user) {
+    session_destroy();
+    header('location: ../login.php');
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -90,10 +122,10 @@
             <br />
             <ul class="list-unstyled ps-0" id="sidebar">
                 <li class="mb-2">
-                    <a href="dashboard.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
+                    <a href="dashboard.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                 </li>
                 <li class="mb-2">
-                    <a href="user-management/index.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                    <a href="userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                 </li>
                 <li class="mb-2">
                     <a href="cancellation-requests.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
@@ -156,7 +188,7 @@
                         <div class="dropdown-center">
                             <button class="btn btn-bd-primary dropdown-toggle d-flex align-items-center" id="profile-dropdown" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle profile options" style="outline: none; border: none; box-shadow: none">
                                 <i class="bi bi-person-circle" style="font-size: 1.3em"></i>
-                                <span class="ms-2" id="username-text">Username</span>
+                                <span class="ms-2" id="username-text"><?php echo htmlspecialchars($user['username']) ?></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                                 <li>
@@ -169,7 +201,7 @@
                                     </button>
                                 </li>
                                 <li>
-                                    <a href="../index.html" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                    <a href=" /logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
                                         <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                         Logout
                                         <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -200,16 +232,16 @@
             <div class="offcanvas-body mt-0">
                 <ul class="list-unstyled ps-0" id="sidebar">
                     <li class="mb-2">
-                        <a href="dashboard.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
+                        <a href="dashboard.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                     </li>
                     <li class="mb-2">
-                        <a href="user-management/index.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                        <a href="userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                     </li>
                     <li class="mb-2">
-                        <a href="cancellation-requests.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
+                        <a href="cancellation-requests.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
                     </li>
                     <li class="mb-2">
-                        <a href="online-checkin.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
+                        <a href="online-checkin.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
                     </li>
                 </ul>
             </div>

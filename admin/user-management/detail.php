@@ -1,9 +1,49 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('location: ../login.php'); 
+    exit;
+}
+
+if ($_SESSION['user_status'] == 1) {
+    header('location: ../index.php'); 
+    exit;
+}
+
+require_once('../../config.php');
+
+$user_id = $_SESSION['user_id'];
+
+$stmt = $mysqli->prepare("SELECT id, username, email FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id); 
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc(); 
+
+$stmt->close();
+
+if (!$user) {
+    session_destroy();
+    header('location: ../login.php');
+    exit;
+}
+
+$user_id_to_view = $_GET['id'];
+
+$user_info_stmt = $mysqli->prepare("SELECT first_name, last_name, username, email, phone, created_at, updated_at FROM users WHERE id = ?");
+$user_info_stmt->bind_param("i", $user_id_to_view);
+$user_info_stmt->execute();
+$result = $user_info_stmt->get_result();
+$user_view = $result->fetch_assoc();
+
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Edit User Management and User Levels | Al Capone</title>
+        <title>Detail User Management and User Levels | Al Capone</title>
         <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
         <!-- Bootstrap CSS -->
@@ -98,16 +138,16 @@
             <br />
             <ul class="list-unstyled ps-0" id="sidebar">
                 <li class="mb-2">
-                    <a href="../dashboard.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
+                    <a href="../dashboard.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                 </li>
                 <li class="mb-2">
-                    <a href="index.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                    <a href="../userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                 </li>
                 <li class="mb-2">
-                    <a href="cancellation-requests.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
+                    <a href="../cancellationRequests.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
                 </li>
                 <li class="mb-2">
-                    <a href="online-checkin.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
+                    <a href="../onlineCheckin.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
                 </li>
             </ul>
         </aside>
@@ -122,7 +162,7 @@
                     <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                         <i class="bi bi-arrow-bar-right"></i>
                     </button>
-                    <h5 class="mb-0 fw-bold">Edit User Management and User Levels</h5>
+                    <h5 class="mb-0 fw-bold">Detail User Management and User Levels</h5>
 
                     <!-- Right Side (Login and Dark Mode Toggle) -->
                     <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -158,7 +198,7 @@
                         <div class="dropdown-center">
                             <button class="btn btn-bd-blue d-flex align-items-center" id="profile-dropdown" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)" style="outline: none; border: none; box-shadow: none">
                                 <i class="bi bi-person-circle" style="font-size: 1.3em"></i>
-                                <span class="ms-2 d-none d-md-block" id="username-text">Username</span>
+                                <span class="ms-2 d-none d-md-block" id="username-text"><?php echo htmlspecialchars($user['username']) ?></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                                 <li>
@@ -171,7 +211,7 @@
                                     </button>
                                 </li>
                                 <li>
-                                    <a href="../index.html" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                    <a href="../../index.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
                                         <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                         Logout
                                         <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -191,77 +231,62 @@
             <!-- Section Content -->
             <section id="main-content">
                 <div class="container">
-                    <!-- Heading for Edit User Management and User Level -->
+                    <!-- Heading for Detail User Management and User Level -->
                     <div class="section-header mb-4">
-                        <p>Update the details of an existing user. You can modify their name, email, role, and other information. Ensure all changes are accurate before saving.</p>
+                        <p>View the details of the selected user, including their name, email, role, and account status. You can choose to edit or delete their account if needed.</p>
                         <nav style="--bs-breadcrumb-divider: '>'" aria-label="breadcrumb">
                             <ol class="breadcrumb">
-                                <li class="breadcrumb-item"><a href="index.html" class="text-blue">User Management</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                                <li class="breadcrumb-item"><a href="../userManagement.php" class="text-blue">User Management</a></li>
+                                <li class="breadcrumb-item active" aria-current="page">Details</li>
                             </ol>
                         </nav>
                     </div>
 
                     <form class="mb-4">
-                        <!-- Username Field -->
-                        <div class="mb-3">
-                            <label class="form-label">Username <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" required />
-                        </div>
-
-                        <!-- Email Address Field -->
-                        <div class="mb-3">
-                            <label class="form-label">Email address <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" required />
-                        </div>
-
-                        <!-- Password Field -->
-                        <div class="mb-3">
-                            <label class="form-label">Password <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="password" required />
-                                <button class="btn btn-outline-secondary" type="button" id="toggle-password">
-                                    <i class="bi bi-eye-slash" id="eye-icon"></i>
-                                </button>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-control" disabled value="<?= $user_view['first_name'];?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" disabled value="<?= $user_view['last_name'];?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Username</label>
+                                    <input type="text" class="form-control" disabled value="<?= $user_view['username'];?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="number" class="form-control" disabled value="<?= $user_view['phone'];?>">
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">Email address</label>
+                                    <input type="email" class="form-control" disabled value="<?= $user_view['email'];?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Created at</label>
+                                    <input type="date" class="form-control" disabled value="<?= date('Y-m-d', strtotime($user_view['created_at'])); ?>">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Last Updated at</label>
+                                    <input type="date" class="form-control" disabled value="<?= date('Y-m-d', strtotime($user_view['updated_at'])); ?>">
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Confirm Password Field -->
-                        <div class="mb-3">
-                            <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="password-confirm" required />
-                                <button class="btn btn-outline-secondary" type="button" id="toggle-password-confirm">
-                                    <i class="bi bi-eye-slash" id="eye-icon-confirm"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Address Field -->
-                        <div class="mb-3">
-                            <label class="form-label">Address</label>
-                            <input type="text" class="form-control" />
-                        </div>
-
-                        <!-- Phone Number Field -->
-                        <div class="mb-3">
-                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" required />
-                        </div>
-
-                        <!-- Role Selection (Admin or User) -->
-                        <div class="mb-3">
-                            <label class="form-label">Role <span class="text-danger">*</span></label>
-                            <select class="form-select" required>
-                                <option value="" disabled selected>Select Role</option>
-                                <option value="admin">Admin</option>
-                                <option value="user">User</option>
-                            </select>
-                        </div>
-
-                        <!-- Submit Button -->
-                        <a href="javascript:void(0);" class="btn bg-blue w-auto">Update User</a>
-                    </form>
                 </div>
             </section>
             <!-- End Main Content -->
@@ -271,22 +296,22 @@
         <!-- Sidebar for Mobile -->
         <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
             <div class="offcanvas-header">
-                <a href="../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
+                <a href="../../index.php" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
                 <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body mt-0">
                 <ul class="list-unstyled ps-0" id="sidebar">
                     <li class="mb-2">
-                        <a href="dashboard.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
+                        <a href="../dashboard.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                     </li>
                     <li class="mb-2">
-                        <a href="index.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                        <a href="../userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                     </li>
                     <li class="mb-2">
-                        <a href="cancellation-requests.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
+                        <a href="../cancellationRequests.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
                     </li>
                     <li class="mb-2">
-                        <a href="online-checkin.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
+                        <a href="../onlineCheckin.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
                     </li>
                 </ul>
             </div>
@@ -330,6 +355,40 @@
                 if (currentUrl.includes(linkHref.split("/").pop())) {
                     // Add the 'bg-blue' class to the active link
                     link.classList.add("bg-blue");
+                }
+            });
+        </script>
+
+        <script>
+            const togglePassword = document.getElementById("toggle-password");
+            const passwordField = document.getElementById("password");
+            const eyeIcon = document.getElementById("eye-icon");
+
+            togglePassword.addEventListener("click", function () {
+                if (passwordField.type === "password") {
+                    passwordField.type = "text";
+                    eyeIcon.classList.remove("bi-eye-slash");
+                    eyeIcon.classList.add("bi-eye");
+                } else {
+                    passwordField.type = "password";
+                    eyeIcon.classList.remove("bi-eye");
+                    eyeIcon.classList.add("bi-eye-slash");
+                }
+            });
+
+            const togglePasswordConfirm = document.getElementById("toggle-password-confirm");
+            const passwordConfirmField = document.getElementById("password-confirm");
+            const eyeIconConfirm = document.getElementById("eye-icon-confirm");
+
+            togglePasswordConfirm.addEventListener("click", function () {
+                if (passwordConfirmField.type === "password") {
+                    passwordConfirmField.type = "text";
+                    eyeIconConfirm.classList.remove("bi-eye-slash");
+                    eyeIconConfirm.classList.add("bi-eye");
+                } else {
+                    passwordConfirmField.type = "password";
+                    eyeIconConfirm.classList.remove("bi-eye");
+                    eyeIconConfirm.classList.add("bi-eye-slash");
                 }
             });
         </script>

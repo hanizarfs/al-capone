@@ -1,10 +1,62 @@
+<?php
+session_start();
+
+//Delete user swal 
+$success_message = '';
+if (isset($_SESSION['success_message'])) {
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+$error_message = '';
+if (isset($_SESSION['error_message'])) {
+    $error_message = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('location: ../login.php'); 
+    exit;
+}
+
+if ($_SESSION['user_status'] == 1) {
+    header('location: ../index.php'); 
+    exit;
+}
+
+require_once('../config.php');
+
+$user_id = $_SESSION['user_id'];
+
+$stmt = $mysqli->prepare("SELECT id, username, email FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id); 
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc(); 
+
+$stmt->close();
+
+if (!$user) {
+    session_destroy();
+    header('location: ../login.php');
+    exit;
+}
+
+if($_SESSION['user_status'] == 2){
+    $sql= "SELECT id, username, email, first_name, last_name FROM users WHERE status = 1 OR status = 0 ORDER BY id ASC";
+}else{
+    $sql= "SELECT id, username, email, first_name, last_name FROM users WHERE status = 1 ORDER BY id ASC";
+}
+
+$result= $mysqli->query($sql);
+
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>User Management and User Levels | Al Capone</title>
-        <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
+        <link rel="icon" type="image/x-icon" href="..//assets/img/Logo.webp" />
 
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" />
@@ -16,7 +68,7 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" />
 
         <!-- CSS -->
-        <link rel="stylesheet" href="../../assets/css/style.css" />
+        <link rel="stylesheet" href="..//assets/css/style.css" />
 
         <!-- Style -->
         <style>
@@ -92,7 +144,7 @@
         <!-- Aside Left -->
         <aside class="collapse show collapse-horizontal col-sm-2 p-3 border-end d-none d-lg-block" id="collapseWidthExample">
             <a href="/" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-body-emphasis text-decoration-none">
-                <img src="../../assets/img/Logo.webp" alt="Logo" width="40" />
+                <img src="../assets/img/Logo.webp" alt="Logo" width="40" />
                 <span class="d-print-block ms-2 fw-bold fs-5">Al Capone</span>
             </a>
             <br />
@@ -101,7 +153,7 @@
                     <a href="../dashboard.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                 </li>
                 <li class="mb-2">
-                    <a href="user-management/index.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                    <a href="userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                 </li>
                 <li class="mb-2">
                     <a href="cancellation-requests.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
@@ -158,7 +210,7 @@
                         <div class="dropdown-center">
                             <button class="btn btn-bd-blue d-flex align-items-center" id="profile-dropdown" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)" style="outline: none; border: none; box-shadow: none">
                                 <i class="bi bi-person-circle" style="font-size: 1.3em"></i>
-                                <span class="ms-2 d-none d-md-block" id="username-text">Username</span>
+                                <span class="ms-2 d-none d-md-block" id="username-text"><?php echo htmlspecialchars($user['username']) ?></span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                                 <li>
@@ -171,7 +223,7 @@
                                     </button>
                                 </li>
                                 <li>
-                                    <a href="../index.html" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                    <a href=" ../logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
                                         <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                         Logout
                                         <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -193,8 +245,7 @@
                 <div class="container">
                     <!-- Heading for User Management and User Level -->
                     <div class="section-header mb-4">
-                        <p>Manage users and their roles within the system. Here you can view the list of users, assign roles (Admin or User), and perform actions such as editing user details or deleting users. The user levels determine the access and permissions granted to each user.</p>
-                        <a href="create.html" class="btn bg-blue w-auto">
+                        <a href="user-management/create.php" class="btn bg-blue w-auto">
                             <div class="d-flex justify-content-center align-items-center"><i class="bi bi-plus me-1"></i>New User</div>
                         </a>
                     </div>
@@ -205,60 +256,58 @@
                             <thead>
                                 <tr>
                                     <th scope="col">#</th>
+                                    <th scope="col">Username</th>
+                                    <th scope="col">Email</th>
                                     <th scope="col">Name</th>
-                                    <th scope="col">Role</th>
                                     <th scope="col">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                <?php
+                                
+                                if ($result && $result->num_rows > 0){
+                                    $row_number = 1;
+
+                                    while($user_query = $result->fetch_assoc()){
+
+                                ?>
                                 <tr>
-                                    <th scope="row">1</th>
-                                    <td>Mark</td>
-                                    <td>Admin</td>
+                                    <th scope="row"><?php echo $row_number++; ?></th>
+                                    
+                                    <td><?php echo htmlspecialchars($user_query['username']); ?></td>
+                                    
+                                    <td><?php echo htmlspecialchars($user_query['email']); ?></td>
+                                    
+                                    <td><?php echo htmlspecialchars($user_query['first_name'] . ' ' . $user_query['last_name']); ?></td>
+                                    
                                     <td>
-                                        <a href="detail.html" class="btn bg-blue w-auto">
+                                        <a href="user-management/detail.php?id=<?php echo $user_query['id']; ?>" class="btn bg-blue w-auto">
                                             <div class="d-flex justify-content-center align-items-center"><i class="bi bi-eye-fill me-1"></i>Detail</div>
                                         </a>
-                                        <a href="edit.html" class="btn bg-warning w-auto">
+                                        <a href="user-management/edit.php?id=<?php echo $user_query['id']; ?>" class="btn bg-warning w-auto">
                                             <div class="d-flex justify-content-center align-items-center text-dark"><i class="bi bi-pencil-fill me-1"></i>Edit</div>
                                         </a>
-                                        <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn">
-                                            <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Hapus</div>
+                                        <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn" data-id="<?php echo $user_query['id']; ?>" data-username="<?php echo htmlspecialchars($user_query['username']); ?>">
+                                            <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Delete</div>
                                         </a>
                                     </td>
                                 </tr>
+                                <?php
+                                    } 
+                                } else {
+                                ?>
                                 <tr>
-                                    <th scope="row">2</th>
-                                    <td>Jacob</td>
-                                    <td>User</td>
-                                    <td>
-                                        <a href="detail.html" class="btn bg-blue w-auto">
-                                            <div class="d-flex justify-content-center align-items-center"><i class="bi bi-eye-fill me-1"></i>Detail</div>
-                                        </a>
-                                        <a href="edit.html" class="btn bg-warning w-auto">
-                                            <div class="d-flex justify-content-center align-items-center text-dark"><i class="bi bi-pencil-fill me-1"></i>Edit</div>
-                                        </a>
-                                        <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn">
-                                            <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Hapus</div>
-                                        </a>
-                                    </td>
+                                    <td colspan-="5" class="text-center">0</td>
+                                    <td colspan-="5" class="text-center">No users found</td>
+                                    <td colspan-="5" class="text-center">No users found</td>
+                                    <td colspan-="5" class="text-center">No users found</td>
+                                    <td colspan-="5" class="text-center">--</td>
                                 </tr>
-                                <tr>
-                                    <th scope="row">3</th>
-                                    <td>John</td>
-                                    <td>User</td>
-                                    <td>
-                                        <a href="detail.html" class="btn bg-blue w-auto">
-                                            <div class="d-flex justify-content-center align-items-center"><i class="bi bi-eye-fill me-1"></i>Detail</div>
-                                        </a>
-                                        <a href="edit.html" class="btn bg-warning w-auto">
-                                            <div class="d-flex justify-content-center align-items-center text-dark"><i class="bi bi-pencil-fill me-1"></i>Edit</div>
-                                        </a>
-                                        <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn">
-                                            <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Hapus</div>
-                                        </a>
-                                    </td>
-                                </tr>
+                                <?php
+                                }
+                                $result->free();
+                                $mysqli->close();
+                                ?>
                             </tbody>
                         </table>
                     </div>
@@ -304,7 +353,7 @@
         <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 
         <!-- Main JS -->
-        <script src="../../assets/js/main.js"></script>
+        <script src="..//assets/js/main.js"></script>
 
         <script>
             $(document).ready(function () {
@@ -314,30 +363,49 @@
             });
 
             // Add SweetAlert2 confirmation for delete
-            $(".delete-btn").on("click", function (e) {
-                e.preventDefault(); // Prevent the default anchor behavior
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            deleteButtons.forEach(button => {
+                button.addEventListener('click', function (e) {
+                    // Prevent the default link behavior
+                    e.preventDefault();
 
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "This action cannot be undone!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonText: "Yes, Delete it!",
-                    cancelButtonText: "No, Cancel!",
-                    reverseButtons: true,
-                    confirmButtonColor: "#FF0000", // Set confirm button color to red
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // Perform the delete action, such as redirecting or deleting data
-                        Swal.fire("Deleted!", "Your data has been deleted.", "success");
-                    } else if (result.dismiss === Swal.DismissReason.cancel) {
-                        Swal.fire("Cancelled", "Your data is safe :)", "error");
-                    }
+                    // Get the user ID and username from the data attributes
+                    const userId = this.dataset.id;
+                    const username = this.dataset.username;
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: `You are about to delete the user: ${username}. You won't be able to revert this!`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = `CRUD/user_delete.php?id=${userId}`;
+                        }
+                    });
                 });
             });
-        </script>
 
-        <script>
+            // swal delete
+            <?php if (!empty($success_message)): ?>
+                Swal.fire({
+                    title: 'Success!',
+                    text: <?php echo json_encode($success_message); ?>,
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                });
+            <?php endif; ?>
+            <?php if (!empty($error_message)): ?>
+                Swal.fire({
+                    title: 'Error!',
+                    text: <?php echo json_encode($error_message); ?>,
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+            <?php endif; ?>
+
             // Get the current URL path (without the base URL)
             const currentUrl = window.location.pathname;
 

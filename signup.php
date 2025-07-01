@@ -1,3 +1,9 @@
+<?php
+session_start();
+$success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+$error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+unset($_SESSION['success_message'], $_SESSION['error_message']);
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -37,19 +43,43 @@
                                             <h1 class="fw-bold">Create Your Account</h1>
                                             <p>Join us today! Sign up and start enjoying exclusive access to your personalized dashboard.</p>
                                         </div>
-                                        <form class="mb-4">
+                                        <form class="mb-4" action="CRUD/register.php" method="post" id="registerForm">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" name="name_first" required />
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                                        <input type="text" class="form-control" name="name_last" required />
+                                                    </div>
+                                                </div>
+                                            
+                                            
                                             <div class="mb-3">
                                                 <label class="form-label">Username <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" required />
+                                                <input type="text" class="form-control" name="username" required />
                                             </div>
-                                            <div class="mb-3">
-                                                <label class="form-label">Email address <span class="text-danger">*</span></label>
-                                                <input type="email" class="form-control" required />
-                                            </div>
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Email address <span class="text-danger">*</span></label>
+                                                            <input type="email" class="form-control" name="email" required />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="mb-3">
+                                                            <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                                            <input type="number" class="form-control" name="phone" required />
+                                                        </div>
+                                                    </div>
+
                                             <div class="mb-3">
                                                 <label class="form-label">Password <span class="text-danger">*</span></label>
                                                 <div class="input-group">
-                                                    <input type="password" class="form-control" id="password" required />
+                                                    <input type="password" class="form-control" id="password" name="password" required />
                                                     <button class="btn btn-outline-secondary" type="button" id="toggle-password">
                                                         <i class="bi bi-eye-slash" id="eye-icon"></i>
                                                     </button>
@@ -64,8 +94,9 @@
                                                     </button>
                                                 </div>
                                             </div>
-                                            <a href="javascript:void(0);" class="btn bg-blue" id="register-btn"> Register </a>
-                                        </form>
+                                            </div>
+                                            <button type="submit" class="btn bg-blue" id="register-btn" name="register">Register</button>
+                                            </form>
                                         <p class="text-center">
                                             Already have an account?
                                             <a href="login.html" class="text-blue">Login here</a>
@@ -90,6 +121,30 @@
         <script src="./assets/js/main.js"></script>
 
         <script>
+            //swal success/error
+            <?php if($success_message): ?>
+            Swal.fire({
+                title: 'Success!',
+                text: '<?php echo $success_message; ?>',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2000,
+                willClose: () => {
+                    window.location.href = 'login.php';
+                }
+            });
+            <?php endif; ?>
+            
+            <?php if($error_message): ?>
+                Swal.fire({
+                    title: 'Error!',
+                    text: '<?php echo $error_message; ?>',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+            <?php endif; ?>
+            
+            //pass toggle eye function
             const togglePassword = document.getElementById("toggle-password");
             const passwordField = document.getElementById("password");
             const eyeIcon = document.getElementById("eye-icon");
@@ -122,22 +177,22 @@
                 }
             });
 
-            document.getElementById("register-btn").addEventListener("click", function (e) {
+            // swal check pass
+            document.getElementById("registerForm").addEventListener("submit", function(e) {
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("password-confirm").value;
+            
+            if(password !== confirmPassword) {
                 e.preventDefault();
-
-                // Show SweetAlert
                 Swal.fire({
-                    title: "Registration Successful!",
-                    text: "Your account has been successfully created!",
-                    icon: "success",
-                    showConfirmButton: false,
-                    timer: 2000,
-                    willClose: () => {
-                        // Redirect to the dashboard once the alert is closed
-                        window.location.href = "admin/dashboard.html";
-                    },
+                    title: 'Error!',
+                    text: 'Passwords do not match!',
+                    icon: 'error'
                 });
+                return false;
+            }
             });
         </script>
     </body>
 </html>
+

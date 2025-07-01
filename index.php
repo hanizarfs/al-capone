@@ -87,7 +87,7 @@
                         <!-- End Cambiar Tema -->
 
                         <!-- Login Button -->
-                        <a href="login.html" class="btn bg-blue"> Login </a>
+                        <a href="login.php" class="btn bg-blue"> Login </a>
                     </div>
                 </div>
             </div>

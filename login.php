@@ -1,3 +1,10 @@
+<?php
+session_start();
+$success_message = isset($_SESSION['success_message']) ? $_SESSION['success_message'] : '';
+$admin_message = isset($_SESSION['admin_message']) ? $_SESSION['admin_message'] : '';
+$error_message = isset($_SESSION['error_message']) ? $_SESSION['error_message'] : '';
+unset($_SESSION['success_message'], $_SESSION['admin_message'], $_SESSION['error_message']);
+?>
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -47,7 +54,7 @@
                                     <div class="login-form w-100 px-3 px-md-5">
                                         <div class="mb-4">
                                             <a
-                                                href="index.html"
+                                                href="index.php"
                                                 class="btn btn-outline-secondary mb-4"
                                             >
                                                 <i class="bi bi-arrow-left"></i>
@@ -62,7 +69,7 @@
                                                 excited to have you back!
                                             </p>
                                         </div>
-                                        <form class="mb-4">
+                                        <form class="mb-4" action="CRUD/login.php" method="post" id="loginForm">
                                             <div class="mb-3">
                                                 <label class="form-label"
                                                     >Email address
@@ -73,6 +80,7 @@
                                                 <input
                                                     type="email"
                                                     class="form-control"
+                                                    name="email"
                                                     required
                                                 />
                                             </div>
@@ -87,6 +95,7 @@
                                                     <input
                                                         type="password"
                                                         class="form-control"
+                                                        name="password"
                                                         id="password"
                                                         required
                                                     />
@@ -107,18 +116,14 @@
                                                     >Forgot Password?</a
                                                 >
                                             </div>
-                                            <a
-                                                href="javascript:void(0);"
-                                                class="btn bg-blue"
-                                                id="login-btn"
-                                            >
+                                            <button type="login" class="btn bg-blue" id="login-btn" name="login">
                                                 Login
-                                            </a>
+                                            </button>
                                         </form>
                                         <p class="text-center">
                                             Don't have an account?
                                             <a
-                                                href="register.html"
+                                                href="signup.php"
                                                 class="text-blue"
                                                 >Sign up here</a
                                             >
@@ -143,12 +148,69 @@
         <script src="./assets/js/main.js"></script>
 
         <script>
+            //swal success/admin/error
+            <?php if($success_message): ?>
+            Swal.fire({
+                title: 'Success!',
+                text: '<?php echo $success_message; ?>',
+                icon: 'success',
+                showConfirmButton: false,
+                timer: 2000,
+                willClose: () => {
+                    window.location.href = 'index.php';
+                }
+            });
+            <?php endif; ?>
+            
+            <?php if($admin_message): ?>
+                Swal.fire({
+                    title: "Login Success!",
+                    text: '<?php echo $admin_message; ?>',
+                    showDenyButton: true,
+                    confirmButtonText: "Dashboard",
+                    denyButtonText: `Main Page`
+                    }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Will be redirected to dashboard shortly!',
+                            text: '',
+                            icon: 'info',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            willClose: () => {
+                                window.location.href = 'admin/dashboard.php';
+                            }}
+                        );
+                    } else if (result.isDenied) {
+                        Swal.fire({
+                            title: 'Will be redirected to main page shortly!',
+                            text: '',
+                            icon: 'success',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            willClose: () => {
+                                window.location.href = 'index.php';
+                            }}
+                        );
+                    }
+                });
+            <?php endif; ?>
+
+            <?php if($error_message): ?>
+                Swal.fire({
+                    title: 'Error!',
+                    text: '<?php echo $error_message; ?>',
+                    icon: 'error',
+                    confirmButtonText: 'Try Again'
+                });
+            <?php endif; ?>
+
+            // pass toggle
             const togglePassword = document.getElementById("toggle-password");
             const passwordField = document.getElementById("password");
             const eyeIcon = document.getElementById("eye-icon");
 
             togglePassword.addEventListener("click", function () {
-                // Toggle the password visibility
                 if (passwordField.type === "password") {
                     passwordField.type = "text";
                     eyeIcon.classList.remove("bi-eye-slash");
@@ -159,25 +221,6 @@
                     eyeIcon.classList.add("bi-eye-slash");
                 }
             });
-
-            document
-                .getElementById("login-btn")
-                .addEventListener("click", function (e) {
-                    e.preventDefault();
-
-                    // Show SweetAlert
-                    Swal.fire({
-                        title: "Success!",
-                        text: "You are successfully logged in!",
-                        icon: "success",
-                        showConfirmButton: false,
-                        timer: 2000,
-                        willClose: () => {
-                            // Redirect to the dashboard once the alert is closed
-                            window.location.href = "admin/dashboard.html";
-                        },
-                    });
-                });
         </script>
     </body>
 </html>
