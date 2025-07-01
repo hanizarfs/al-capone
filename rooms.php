@@ -6,7 +6,7 @@
 require_once('config.php');
 
 // Prepare the SQL query to get all rooms, ordered by price
-$sql = "SELECT id, name, price, description, availability FROM rooms ORDER BY price ASC";
+$sql = "SELECT id, name, price, description FROM rooms ORDER BY price ASC";
 
 // Execute the query
 $result = $mysqli->query($sql);
@@ -98,16 +98,6 @@ $result = $mysqli->query($sql);
                                             <h5 class="card-title fw-bold"><?= htmlspecialchars($room['name']); ?></h5>
                                             <p class="card-text text-primary fw-bold fs-5 mb-2">Rp <?= number_format($room['price'], 0, ',', '.'); ?> / night</p>
                                             <p class="card-text small text-muted"><?= htmlspecialchars($room['description']); ?></p>
-                                            
-                                            <div class="mt-auto pt-3">
-                                                <?php if ($room['availability'] > 0): ?>
-                                                    <p class="card-text"><small class="text-success fw-bold"><?= htmlspecialchars($room['availability']); ?> rooms left!</small></p>
-                                                    <a href="booking.php?room_id=<?= htmlspecialchars($room['id']); ?>" class="btn btn-outline-blue w-100 fw-semibold">Order Now</a>
-                                                <?php else: ?>
-                                                    <p class="card-text"><small class="text-danger fw-bold">Fully Booked</small></p>
-                                                    <a href="#" class="btn btn-secondary w-100 fw-semibold disabled">Not Available</a>
-                                                <?php endif; ?>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
