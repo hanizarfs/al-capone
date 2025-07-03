@@ -186,32 +186,32 @@
                 <!-- Gallery Item -->
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?hotel-room" class="card-img-top gallery-img" alt="Room" />
+                        <img src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aG90ZWx8ZW58MHx8MHx8fDA%3D" class="card-img-top gallery-img" alt="Room" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?resort-pool" class="card-img-top gallery-img" alt="Pool" />
+                        <img src="https://images.unsplash.com/photo-1729808641681-e8b5024253d8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cG9vbCUyMHJlc29ydHxlbnwwfHwwfHx8MA%3D%3D" class="card-img-top gallery-img" alt="Pool" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?spa,relax" class="card-img-top gallery-img" alt="Spa" />
+                        <img src="https://plus.unsplash.com/premium_photo-1683134297492-cce5fc6dae31?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c3BhJTIwcmVzb3J0fGVufDB8fDB8fHww" class="card-img-top gallery-img" alt="Spa" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?resort-view" class="card-img-top gallery-img" alt="View" />
+                        <img src="https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVzb3J0JTIwaG90ZWx8ZW58MHx8MHx8fDA%3D" class="card-img-top gallery-img" alt="View" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?resort-night" class="card-img-top gallery-img" alt="Night View" />
+                        <img src="https://images.unsplash.com/photo-1662386392989-bd9388cc636f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8cmVzb3J0JTIwaG90ZWwlMjBuaWdodHxlbnwwfHwwfHx8MA%3D%3D" class="card-img-top gallery-img" alt="Night View" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?restaurant,hotel" class="card-img-top gallery-img" alt="Restaurant" />
+                        <img src="https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fHJlc3RhdXJhbnR8ZW58MHx8MHx8fDA%3D" class="card-img-top gallery-img" alt="Restaurant" />
                     </div>
                 </div>
                 <!-- Add more as needed -->
