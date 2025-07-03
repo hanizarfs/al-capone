@@ -36,7 +36,7 @@ if (!$user) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Al Capone</title>
+    <title>User Management | Al Capone</title>
     <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
@@ -47,72 +47,6 @@ if (!$user) {
 
     <!-- CSS -->
     <link rel="stylesheet" href="../../assets/css/style.css" />
-
-    <!-- Style -->
-    <style>
-        body {
-            height: 100%;
-        }
-
-        aside {
-            /* border: 1px yellow solid; */
-            position: fixed;
-            overflow: auto;
-            height: calc(100vh - 12px);
-            justify-content: flex-start;
-            align-self: flex-start;
-        }
-
-        nav {
-            position: sticky;
-        }
-
-        main {
-            position: relative;
-            overflow: visible;
-            margin-left: auto;
-            justify-content: flex-end;
-            align-self: flex-end;
-        }
-
-        #sidebarshow {
-            display: none;
-        }
-
-        .b-example-divider {
-            width: 100%;
-            height: 3rem;
-            background-color: rgba(0, 0, 0, 0.1);
-            border: solid rgba(0, 0, 0, 0.15);
-            border-width: 1px 0;
-            box-shadow: inset 0 0.5em 1.5em rgba(0, 0, 0, 0.1), inset 0 0.125em 0.5em rgba(0, 0, 0, 0.15);
-        }
-
-        .b-example-vr {
-            flex-shrink: 0;
-            width: 1.5em;
-            height: 100vh;
-        }
-
-        .bi {
-            vertical-align: -0.125em;
-            fill: currentColor;
-        }
-
-        @media screen and (max-width: 992px) {
-            #sidebarshow {
-                display: inline;
-            }
-
-            #sidebartoggle {
-                display: none;
-            }
-        }
-
-        #sidebar button:hover {
-            background: darkblue;
-        }
-    </style>
 </head>
 
 <body>
@@ -128,7 +62,7 @@ if (!$user) {
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h3 class="mb-0">Dashboard</h3>
+                <h3 class="mb-0">User Management</h3>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">

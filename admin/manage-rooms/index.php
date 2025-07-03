@@ -166,7 +166,6 @@ $result = $mysqli->query($sql);
                             <th scope="col">Room Name</th>
                             <th scope="col">Price (Rp)</th>
                             <th scope="col">Description</th>
-                            <th scope="col">Created At</th>
                             <th scope="col">Action</th>
                         </tr>
                     </thead>
@@ -180,7 +179,6 @@ $result = $mysqli->query($sql);
                                     <td><?= htmlspecialchars($room['name']); ?></td>
                                     <td>Rp <?= number_format($room['price'], 0, ',', '.'); ?></td>
                                     <td><?= htmlspecialchars($room['description']); ?></td>
-                                    <td><?= date('d M Y, H:i', strtotime($room['created_at'])); ?></td>
                                     <td class="d-flex gap-2">
                                         <a href="manage-rooms/detail.php?id=<?= urlencode($room['id']); ?>" class="btn btn-primary btn-sm">
                                             <i class="bi bi-eye-fill"></i> Detail
