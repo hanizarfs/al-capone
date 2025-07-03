@@ -12,7 +12,7 @@ include_once("../config.php");
 // Get all data from the invoices.php form
 $invoice_id = trim($_POST['invoice_id']);
 $user_id = (int)$_POST['user_id'];
-$room_type = trim($_POST['room_type']);
+$room_type = trim($_POST['room_id']);
 $checkin_date = trim($_POST['checkin_date']);
 $checkout_date = trim($_POST['checkout_date']);
 $subtotal = (float)$_POST['subtotal']; // Added subtotal from the form
