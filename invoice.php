@@ -22,7 +22,7 @@ $room_id = htmlspecialchars($source_data['room_id'] ?? 'N/A');
 $room_name = htmlspecialchars($source_data['room_name'] ?? 'N/A');
 $price_per_night = (float)($source_data['price_per_night'] ?? 0);
 $total_nights = (int)($source_data['total_nights'] ?? 0);
-$subtotal = (float)($source_data['total_price'] ?? 0);
+$subtotal = (float)($price_per_night * $total_nights);
 $checkin_date = htmlspecialchars($source_data['checkin_date'] ?? '');
 $checkout_date = htmlspecialchars($source_data['checkout_date'] ?? '');
 
@@ -32,10 +32,10 @@ $checkout_date = htmlspecialchars($source_data['checkout_date'] ?? '');
 // $phone = ...
 
 // If essential data is still missing, redirect
-if ($total_nights <= 0 || $subtotal <= 0) {
-    header('Location: rooms.php');
-    exit;
-}
+// if ($total_nights <= 0 || $subtotal <= 0) {
+//     header('Location: rooms.php');
+//     exit;
+// }
 
 // --- CALCULATE TAXES AND GRAND TOTAL ---
 const HOTEL_TAX_RATE = 0.10;
@@ -184,6 +184,9 @@ $mysqli->close();
                                         <input type="hidden" name="invoice_id" value="<?= $invoice_id ?>">
                                         <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
                                         <input type="hidden" name="room_id" value="<?= $room_id ?>">
+                                        <input type="hidden" name="room_name" value="<?= $room_name ?>">
+                                        <input type="hidden" name="price_per_night" value="<?= $price_per_night ?>">
+                                        <input type="hidden" name="total_nights" value="<?= $total_nights ?>">
                                         <input type="hidden" name="checkin_date" value="<?= $checkin_date ?>">
                                         <input type="hidden" name="checkout_date" value="<?= $checkout_date ?>">
                                         <input type="hidden" name="subtotal" value="<?= $subtotal ?>">
