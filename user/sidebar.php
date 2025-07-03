@@ -3,9 +3,9 @@
 $currentFile = basename($_SERVER['PHP_SELF']);
 $currentUri  = $_SERVER['REQUEST_URI'];
 
-// Ambil base URL (tanpa /admin)
+// Ambil base URL (tanpa /user)
 $scriptName = $_SERVER['SCRIPT_NAME'];
-$baseUrl = substr($scriptName, 0, strpos($scriptName, '/admin'));
+$baseUrl = substr($scriptName, 0, strpos($scriptName, '/user'));
 
 // Fungsi untuk menandai halaman aktif berdasarkan file
 function isActive($files)
@@ -34,7 +34,7 @@ function isActiveMulti($filenames, $folder)
     <br />
     <ul class="list-unstyled ps-0" id="sidebar">
         <li class="mb-2">
-            <a href="<?= $baseUrl ?>/admin/dashboard.php"
+            <a href="<?= $baseUrl ?>/user/dashboard.php"
                 class="btn btn-toggle d-inline-flex align-items-center rounded border-0 w-100 <?= isActive('dashboard.php') ?>">
                 <i class="bi bi-house-door-fill me-2"></i> Dashboard
             </a>

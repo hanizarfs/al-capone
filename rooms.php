@@ -45,31 +45,137 @@ $result = $mysqli->query($sql);
             --bs-btn-active-bg: #0d6efd;
             --bs-btn-active-border-color: #0d6efd;
         }
+
+        .hero-section {
+            background-image: url('https://source.unsplash.com/1600x900/?hotel,resort');
+            background-size: cover;
+            background-position: center;
+            height: 75vh;
+            position: relative;
+            color: white;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
     </style>
 </head>
 
 <body>
-    <!-- Start Navbar (Your existing navbar code goes here) -->
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+
+    <!-- Start Navbar -->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary z-1000 fixed-top">
         <div class="container">
+            <!-- Logo -->
             <a class="navbar-brand fw-semibold d-flex justify-content-center align-items-center" href="index.php">
                 <img src="./assets/img/Logo.webp" alt="Logo" width="30" height="30" />
                 <span class="ms-2"> Al Capone </span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+
+            <!-- Navbar Toggler Button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
+            <!-- Nav -->
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <!-- Nav Items -->
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="rooms.php">Rooms</a></li>
-                    <li class="nav-item"><a class="nav-link" href="gallery.php">Gallery</a></li>
-                    <li class="nav-item"><a class="nav-link" href="faq.php">FAQ</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.php">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="rooms.php">Rooms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="gallery.php">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="faq.php">FAQ</a>
+                    </li>
                 </ul>
+
+                <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center">
-                    <!-- Theme Toggle can go here -->
-                    <a href="login.php" class="btn bg-blue"> Login </a>
+                    <!-- Dark Mode Toggle -->
+                    <!-- <div class="form-check form-switch me-3">
+                            <input
+                                class="form-check-input fs-5"
+                                type="checkbox"
+                                id="darkModeToggle"
+                                aria-label="Toggle Dark Mode"
+                            />
+                        </div> -->
+
+                    <!-- Cambiar Tema (Theme Toggle) -->
+                    <div class="dropdown-center mx-2">
+                        <button class="btn btn-bd-blue d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)" style="outline: none; border: none; box-shadow: none">
+                            <!-- Theme icon (dynamically updated) -->
+                            <i id="theme-icon" class="bi bi-circle-half theme-icon-active" style="font-size: 1em"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+                            <li>
+                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                                    <i class="bi bi-sun-fill me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
+                                    Light
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                    <i class="bi bi-moon-stars me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
+                                    Dark
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- End Cambiar Tema -->
+
+                    <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
+                        <!-- Dashboard Dropdown -->
+                        <div class="dropdown-center">
+                            <button class="btn btn-bd-primary dropdown-toggle d-flex align-items-center" id="profile-dropdown" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle profile options" style="outline: none; border: none; box-shadow: none">
+                                <i class="bi bi-person-circle" style="font-size: 1.3em"></i>
+                                <span class="ms-2" id="username-text"><?= htmlspecialchars($user['username']) ?></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
+                                <li>
+                                    <a href="<?= $user['status'] == 1 ? 'user/dashboard.php' : 'admin/dashboard.php' ?>" class="dropdown-item d-flex align-items-center">
+                                        <i class="bi bi-person me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
+                                        Dashboard
+                                        <svg class="bi ms-auto d-none" width="1em" height="1em">
+                                            <path d="M1 1l4 4 4-4" />
+                                        </svg>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="logout.php" class="dropdown-item d-flex align-items-center">
+                                        <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
+                                        Logout
+                                        <svg class="bi ms-auto d-none" width="1em" height="1em">
+                                            <path d="M1 1l4 4 4-4" />
+                                        </svg>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <!-- Login Button -->
+                        <a href="login.php" class="btn bg-blue">Login</a>
+                    <?php endif; ?>
+
                 </div>
             </div>
         </div>
@@ -78,6 +184,18 @@ $result = $mysqli->query($sql);
 
     <!-- Start Main -->
     <main>
+
+
+        <!-- Hero Section -->
+        <section class="hero-section d-flex align-items-center justify-content-center text-center">
+            <div class="hero-overlay"></div>
+            <div class="container hero-content">
+                <h1 class="display-4 fw-bold">Explore Our Rooms</h1>
+                <p class="lead">Luxury, Comfort, and Convenience</p>
+                <a href="#room-list" class="btn btn-light btn-lg">See Available Rooms</a>
+            </div>
+        </section>
+
         <section id="rooms" class="py-5 bg-light">
             <div class="container">
                 <div class="row text-center mb-5">
@@ -113,6 +231,27 @@ $result = $mysqli->query($sql);
                         </div>
                     <?php endif; ?>
                     <!-- --- END OF PHP LOOP --- -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Facilities Section -->
+        <section class="py-5 bg-white">
+            <div class="container text-center">
+                <h2 class="fw-bold mb-4">Facilities</h2>
+                <div class="row g-4">
+                    <div class="col-md-3"><i class="bi bi-wifi fs-2 text-primary"></i>
+                        <p>Free Wi-Fi</p>
+                    </div>
+                    <div class="col-md-3"><i class="bi bi-cup-hot fs-2 text-primary"></i>
+                        <p>Restaurant</p>
+                    </div>
+                    <div class="col-md-3"><i class="bi bi-spa fs-2 text-primary"></i>
+                        <p>Spa & Wellness</p>
+                    </div>
+                    <div class="col-md-3"><i class="bi bi-car-front fs-2 text-primary"></i>
+                        <p>Free Parking</p>
+                    </div>
                 </div>
             </div>
         </section>
