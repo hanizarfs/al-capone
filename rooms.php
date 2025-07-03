@@ -98,6 +98,10 @@ $result = $mysqli->query($sql);
                                             <h5 class="card-title fw-bold"><?= htmlspecialchars($room['name']); ?></h5>
                                             <p class="card-text text-primary fw-bold fs-5 mb-2">Rp <?= number_format($room['price'], 0, ',', '.'); ?> / night</p>
                                             <p class="card-text small text-muted"><?= htmlspecialchars($room['description']); ?></p>
+                                            <div class="mt-auto pt-3">
+                                                <!-- The button is now always available and redirects to booking.php with the room's ID -->
+                                                <a href="booking.php?room_id=<?= htmlspecialchars($room['id']); ?>" class="btn btn-outline-blue w-100 fw-semibold">Order Now</a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

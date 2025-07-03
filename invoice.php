@@ -1,40 +1,35 @@
 <?php
 session_start();
 
-// --- NEW LOGIC TO HANDLE DATA FROM SESSION OR POST ---
-
-$source_data = []; // An empty array to hold our data source
-
-// Check if we are returning from the booking creation script
+// --- LOGIC TO HANDLE DATA FROM SESSION OR POST ---
+$source_data = [];
 if (isset($_SESSION['invoice_data'])) {
-    // If yes, use the data stored in the session
     $source_data = $_SESSION['invoice_data'];
-    // IMPORTANT: Unset the session data so it's not reused on a page refresh
     unset($_SESSION['invoice_data']);
 } 
-// Else, check if this is the first visit from booking.php
 else if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // If yes, use the fresh data from the POST request
     $source_data = $_POST;
 } 
-// If there's no data from session or post, the page was accessed incorrectly
 else {
     header('Location: rooms.php');
     exit;
 }
 
-// --- Now, retrieve all data from our chosen $source_data array ---
+require_once("config.php");
+
+// --- Retrieve all data from our chosen $source_data array ---
 $room_id = htmlspecialchars($source_data['room_id'] ?? 'N/A');
 $room_name = htmlspecialchars($source_data['room_name'] ?? 'N/A');
 $price_per_night = (float)($source_data['price_per_night'] ?? 0);
 $total_nights = (int)($source_data['total_nights'] ?? 0);
 $subtotal = (float)($source_data['total_price'] ?? 0);
-
-$full_name = htmlspecialchars($source_data['full_name'] ?? '');
-$email = htmlspecialchars($source_data['email'] ?? '');
-$phone = htmlspecialchars($source_data['phone'] ?? '');
 $checkin_date = htmlspecialchars($source_data['checkin_date'] ?? '');
 $checkout_date = htmlspecialchars($source_data['checkout_date'] ?? '');
+
+// === REMOVED THE UNNECESSARY LINES THAT CAUSED THE WARNINGS ===
+// $full_name = ...
+// $email = ...
+// $phone = ...
 
 // If essential data is still missing, redirect
 if ($total_nights <= 0 || $subtotal <= 0) {
@@ -42,19 +37,24 @@ if ($total_nights <= 0 || $subtotal <= 0) {
     exit;
 }
 
-// --- CALCULATE TAXES AND GRAND TOTAL (This part remains the same) ---
+// --- CALCULATE TAXES AND GRAND TOTAL ---
 const HOTEL_TAX_RATE = 0.10;
 const PPN_RATE = 0.11;
-
 $hotel_tax = $subtotal * HOTEL_TAX_RATE;
 $ppn = $subtotal * PPN_RATE;
 $grand_total = $subtotal + $hotel_tax + $ppn;
-
-// Use the invoice_id from the source data, or generate a new one if it doesn't exist yet
 $invoice_id = htmlspecialchars($source_data['invoice_id'] ?? 'INV-' . strtoupper(uniqid()));
 
+// --- FETCH THE LOGGED-IN USER'S DETAILS FOR DISPLAY ---
+$user_id = $_SESSION['user_id'];
+$stmt = $mysqli->prepare("SELECT id, email, phone, first_name, last_name FROM users WHERE id = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user = $result->fetch_assoc(); // The $user array now correctly holds all the user info.
 
-
+$stmt->close();
+$mysqli->close();
 ?>
 <!-- The rest of your invoices.php HTML file remains exactly the same -->
 <!DOCTYPE html>
@@ -116,9 +116,9 @@ $invoice_id = htmlspecialchars($source_data['invoice_id'] ?? 'INV-' . strtoupper
                                     <div class="row mb-4">
                                         <div class="col-sm-6">
                                             <h5 class="mb-3">Billed To:</h5>
-                                            <p class="mb-1"><strong><?= htmlspecialchars($_SESSION['first_name']. '' . $_SESSION['last_name']) ?></strong></p>
-                                            <p class="mb-1"><?= htmlspecialchars($_SESSION['email']) ?></p>
-                                            <p class="mb-1"><?= htmlspecialchars($_SESSION['phone']) ?></p>
+                                            <p class="mb-1"><strong><?= htmlspecialchars($user['first_name']. '' . $user['last_name']) ?></strong></p>
+                                            <p class="mb-1"><?= htmlspecialchars($user['email']) ?></p>
+                                            <p class="mb-1"><?= htmlspecialchars($user['phone']) ?></p>
                                         </div>
                                         <div class="col-sm-6 text-sm-end">
                                             <p class="mb-1"><strong>Invoice ID:</strong> <?= $invoice_id ?></p>
