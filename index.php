@@ -40,6 +40,32 @@ $mysqli->close();
 
     <!-- CSS -->
     <link rel="stylesheet" href="./assets/css/style.css" />
+
+    <style>
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            color: white;
+            overflow: hidden;
+        }
+
+        .video-background iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 10%;
+            height: 100vh;
+            z-index: 1;
+            object-fit: cover;
+            pointer-events: none;
+        }
+
+        .hero-overlay {
+            background: rgba(0, 0, 0, 0.5);
+            /* dark overlay */
+            z-index: 10;
+        }
+    </style>
 </head>
 
 <body>
@@ -154,9 +180,21 @@ $mysqli->close();
     <!-- End Navbar -->
 
     <!-- Hero Section -->
-    <section class="hero-section d-flex align-items-center justify-content-center text-center">
-        <div class="hero-overlay"></div>
-        <div class="container hero-content">
+    <section class="hero-section position-relative d-flex align-items-center justify-content-center text-center vh-100 overflow-hidden">
+        <!-- YouTube Background -->
+        <div class="video-background position-absolute top-0 start-0 w-100 h-100 z-n1">
+            <iframe
+                src="https://www.youtube.com/embed/cdKx1Zv3YKs?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&playlist=cdKx1Zv3YKs&modestbranding=1"
+                frameborder="0"
+                allow="autoplay; encrypted-media"
+                allowfullscreen
+                class="w-100 h-100"
+                style="object-fit: cover; pointer-events: none;"></iframe>
+        </div>
+
+        <!-- Hero Content -->
+        <div class="hero-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+        <div class="container position-relative text-white">
             <p class="text-uppercase text-white-50 mb-2">Welcome To</p>
             <h1 class="display-3 fw-bold mb-3">Al Capone Resort</h1>
             <p class="lead mb-4">Experience luxury, nature, and timeless tranquility</p>
@@ -166,6 +204,7 @@ $mysqli->close();
             </div>
         </div>
     </section>
+
 
     <!-- About Section -->
     <section class="py-5">
