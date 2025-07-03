@@ -4,8 +4,8 @@ $currentFile = basename($_SERVER['PHP_SELF']);
 $currentUri  = $_SERVER['REQUEST_URI'];
 
 // Ambil base URL (tanpa /admin)
-$scriptName = $_SERVER['SCRIPT_NAME']; // ex: /al capone/admin/user-management/index.php
-$baseUrl = substr($scriptName, 0, strpos($scriptName, '/admin')); // hasil: /al capone
+$scriptName = $_SERVER['SCRIPT_NAME'];
+$baseUrl = substr($scriptName, 0, strpos($scriptName, '/admin'));
 
 // Fungsi untuk menandai halaman aktif berdasarkan file
 function isActive($files)
@@ -63,7 +63,7 @@ function isActiveMulti($filenames, $folder)
 
         <li class="mb-2">
             <a href="<?= $baseUrl ?>/admin/manage-rooms/index.php"
-                class="btn btn-toggle d-inline-flex align-items-center rounded border-0 w-100 <?= strpos($currentUri, 'manage-rooms') !== false ? 'active' : '' ?>">
+                class="btn btn-toggle d-inline-flex align-items-center rounded border-0 w-100 <?= isActiveMulti(['index.php', 'create.php', 'edit.php', 'detail.php'], 'manage-rooms') ?>">
                 <i class="bi bi-building-fill me-2"></i> Manage Rooms
             </a>
         </li>
