@@ -2,23 +2,14 @@
 session_start();
 require_once('config.php');
 
-// Inisialisasi variabel default
 $user = null;
 $user_id = null;
 $user_status = null;
 
-// Cek apakah user sudah login
 if (isset($_SESSION['user_id']) && isset($_SESSION['user_status'])) {
     $user_id = $_SESSION['user_id'];
     $user_status = $_SESSION['user_status'];
 
-    // Kalau status = 1, redirect ke index.php (user biasa misalnya)
-    if ($user_status == 1) {
-        header('location: index.php');
-        exit;
-    }
-
-    // Ambil data user dari database
     $stmt = $mysqli->prepare("SELECT * FROM users WHERE id = ?");
     $stmt->bind_param("i", $user_id);
     $stmt->execute();
@@ -27,7 +18,6 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['user_status'])) {
     $stmt->close();
 }
 
-// Tutup koneksi database
 $mysqli->close();
 
 ?>

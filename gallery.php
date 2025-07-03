@@ -62,17 +62,120 @@
 
 <body>
 
+    <!-- Start Navbar -->
+    <nav class="navbar navbar-expand-lg bg-body-tertiary z-1000 fixed-top">
+        <div class="container">
+            <!-- Logo -->
+            <a class="navbar-brand fw-semibold d-flex justify-content-center align-items-center" href="index.php">
+                <img src="./assets/img/Logo.webp" alt="Logo" width="30" height="30" />
+                <span class="ms-2"> Al Capone </span>
+            </a>
+
+            <!-- Navbar Toggler Button -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Nav -->
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <!-- Nav Items -->
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.php">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="about.php">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="rooms.php">Rooms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="gallery.php">Gallery</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="faq.php">FAQ</a>
+                    </li>
+                </ul>
+
+                <!-- Right Side (Login and Dark Mode Toggle) -->
+                <div class="d-flex justify-content-center align-items-center">
+                    <!-- Dark Mode Toggle -->
+                    <!-- <div class="form-check form-switch me-3">
+                            <input
+                                class="form-check-input fs-5"
+                                type="checkbox"
+                                id="darkModeToggle"
+                                aria-label="Toggle Dark Mode"
+                            />
+                        </div> -->
+
+                    <!-- Cambiar Tema (Theme Toggle) -->
+                    <div class="dropdown-center mx-2">
+                        <button class="btn btn-bd-blue d-flex align-items-center" id="bd-theme" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)" style="outline: none; border: none; box-shadow: none">
+                            <!-- Theme icon (dynamically updated) -->
+                            <i id="theme-icon" class="bi bi-circle-half theme-icon-active" style="font-size: 1em"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+                            <li>
+                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                                    <i class="bi bi-sun-fill me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
+                                    Light
+                                </button>
+                            </li>
+                            <li>
+                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                    <i class="bi bi-moon-stars me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
+                                    Dark
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <!-- End Cambiar Tema -->
+
+                    <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
+                        <!-- Dashboard Dropdown -->
+                        <div class="dropdown-center">
+                            <button class="btn btn-bd-primary dropdown-toggle d-flex align-items-center" id="profile-dropdown" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle profile options" style="outline: none; border: none; box-shadow: none">
+                                <i class="bi bi-person-circle" style="font-size: 1.3em"></i>
+                                <span class="ms-2" id="username-text"><?= htmlspecialchars($user['username']) ?></span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
+                                <li>
+                                    <a href="<?= $user['status'] == 1 ? 'user/dashboard.php' : 'admin/dashboard.php' ?>" class="dropdown-item d-flex align-items-center">
+                                        <i class="bi bi-person me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
+                                        Dashboard
+                                        <svg class="bi ms-auto d-none" width="1em" height="1em">
+                                            <path d="M1 1l4 4 4-4" />
+                                        </svg>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="logout.php" class="dropdown-item d-flex align-items-center">
+                                        <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
+                                        Logout
+                                        <svg class="bi ms-auto d-none" width="1em" height="1em">
+                                            <path d="M1 1l4 4 4-4" />
+                                        </svg>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    <?php else: ?>
+                        <!-- Login Button -->
+                        <a href="login.php" class="btn bg-blue">Login</a>
+                    <?php endif; ?>
+
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- End Navbar -->
+
     <!-- Hero Section with Search -->
     <section class="hero-gallery d-flex align-items-center text-center">
         <div class="hero-overlay"></div>
         <div class="container hero-content">
             <h1 class="display-5 fw-bold mb-3">Explore Our Gallery</h1>
-            <form class="search-bar d-flex" role="search" onsubmit="event.preventDefault(); alert('Search feature is coming soon!')">
-                <input class="form-control me-2" type="search" placeholder="Search images..." aria-label="Search" />
-                <button class="btn btn-light" type="submit">
-                    <i class="bi bi-search"></i>
-                </button>
-            </form>
         </div>
     </section>
 
@@ -83,32 +186,32 @@
                 <!-- Gallery Item -->
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?hotel-room" class="card-img-top gallery-img" alt="Room" />
+                        <img src="https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8aG90ZWx8ZW58MHx8MHx8fDA%3D" class="card-img-top gallery-img" alt="Room" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?resort-pool" class="card-img-top gallery-img" alt="Pool" />
+                        <img src="https://images.unsplash.com/photo-1729808641681-e8b5024253d8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cG9vbCUyMHJlc29ydHxlbnwwfHwwfHx8MA%3D%3D" class="card-img-top gallery-img" alt="Pool" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?spa,relax" class="card-img-top gallery-img" alt="Spa" />
+                        <img src="https://plus.unsplash.com/premium_photo-1683134297492-cce5fc6dae31?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c3BhJTIwcmVzb3J0fGVufDB8fDB8fHww" class="card-img-top gallery-img" alt="Spa" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?resort-view" class="card-img-top gallery-img" alt="View" />
+                        <img src="https://images.unsplash.com/photo-1540541338287-41700207dee6?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVzb3J0JTIwaG90ZWx8ZW58MHx8MHx8fDA%3D" class="card-img-top gallery-img" alt="View" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?resort-night" class="card-img-top gallery-img" alt="Night View" />
+                        <img src="https://images.unsplash.com/photo-1662386392989-bd9388cc636f?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8cmVzb3J0JTIwaG90ZWwlMjBuaWdodHxlbnwwfHwwfHx8MA%3D%3D" class="card-img-top gallery-img" alt="Night View" />
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/600x400/?restaurant,hotel" class="card-img-top gallery-img" alt="Restaurant" />
+                        <img src="https://images.unsplash.com/photo-1559329007-40df8a9345d8?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzJ8fHJlc3RhdXJhbnR8ZW58MHx8MHx8fDA%3D" class="card-img-top gallery-img" alt="Restaurant" />
                     </div>
                 </div>
                 <!-- Add more as needed -->
@@ -139,7 +242,11 @@
         </div>
     </footer>
 
+    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Main JS -->
+    <script src="./assets/js/main.js"></script>
 </body>
 
 </html>

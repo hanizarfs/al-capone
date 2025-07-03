@@ -153,3 +153,64 @@ main {
 #sidebar button:hover {
     background: darkblue;
 }
+
+
+
+
+
+
+.hero-section {
+    background-image: url('https://source.unsplash.com/1600x900/?luxury-resort,beach');
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    position: relative;
+    color: white;
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Button styling */
+.btn-custom {
+    background-color: #1e40af;
+    color: #fff;
+    border: none;
+    transition: 0.3s;
+}
+
+.btn-custom:hover {
+    background-color: #1d4ed8;
+    color: #fff;
+}
+
+.section-heading {
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.about-text {
+    font-size: 1.125rem;
+    color: #444;
+}
+
+.img-fluid {
+    border-radius: 12px;
+    object-fit: cover;
+}
+
+.z-1000 {
+    z-index: 100;
+}
