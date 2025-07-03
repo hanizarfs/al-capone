@@ -1,6 +1,18 @@
 <?php
 session_start();
 
+//Delete user swal 
+$success_message = '';
+if (isset($_SESSION['success_message'])) {
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+$error_message = '';
+if (isset($_SESSION['error_message'])) {
+    $error_message = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
+
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header('location: ../../login.php');
     exit;
@@ -22,21 +34,26 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 $stmt->close();
-$mysqli->close();
 
 if (!$user) {
     session_destroy();
-    header('location: ../../login.php');
+    header('location: ../login.php');
     exit;
 }
+
+// Query ambil semua data dari tabel rooms
+$sql = "SELECT id, name, price, description, created_at FROM rooms ORDER BY created_at DESC";
+$result = $mysqli->query($sql);
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Management | Al Capone</title>
+    <title>Manage Rooms | Al Capone</title>
     <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
@@ -62,7 +79,7 @@ if (!$user) {
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h3 class="mb-0">User Management</h3>
+                <h3 class="mb-0">Manage Rooms</h3>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -138,8 +155,60 @@ if (!$user) {
         <!-- End NavBar -->
 
         <div class="container">
-            <h1>Halo</h1>
+
+            <!-- Tabel Rooms -->
+            <div class="table-responsive">
+                <table id="dataTables" class="table table-striped border">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Room ID</th>
+                            <th scope="col">Room Name</th>
+                            <th scope="col">Price (Rp)</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($result && $result->num_rows > 0): ?>
+                            <?php $no = 1; ?>
+                            <?php while ($room = $result->fetch_assoc()): ?>
+                                <tr>
+                                    <th scope="row"><?= $no++; ?></th>
+                                    <td><?= htmlspecialchars($room['id']); ?></td>
+                                    <td><?= htmlspecialchars($room['name']); ?></td>
+                                    <td>Rp <?= number_format($room['price'], 0, ',', '.'); ?></td>
+                                    <td><?= htmlspecialchars($room['description']); ?></td>
+                                    <td class="d-flex gap-2">
+                                        <a href="manage-rooms/detail.php?id=<?= urlencode($room['id']); ?>" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye-fill"></i> Detail
+                                        </a>
+                                        <a href="manage-rooms/edit.php?id=<?= urlencode($room['id']); ?>" class="btn btn-warning btn-sm text-dark">
+                                            <i class="bi bi-pencil-fill"></i> Edit
+                                        </a>
+                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-room-btn" data-id="<?= htmlspecialchars($room['id']); ?>" data-name="<?= htmlspecialchars($room['name']); ?>">
+                                            <i class="bi bi-trash-fill"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="7" class="text-center">No rooms found</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <?php
+            // Cleanup
+            if ($result) $result->free();
+            $mysqli->close();
+            ?>
         </div>
+
+
     </main>
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
