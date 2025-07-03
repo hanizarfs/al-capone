@@ -26,17 +26,6 @@ $subtotal = (float)($source_data['total_price'] ?? 0);
 $checkin_date = htmlspecialchars($source_data['checkin_date'] ?? '');
 $checkout_date = htmlspecialchars($source_data['checkout_date'] ?? '');
 
-// === REMOVED THE UNNECESSARY LINES THAT CAUSED THE WARNINGS ===
-// $full_name = ...
-// $email = ...
-// $phone = ...
-
-// If essential data is still missing, redirect
-if ($total_nights <= 0 || $subtotal <= 0) {
-    header('Location: rooms.php');
-    exit;
-}
-
 // --- CALCULATE TAXES AND GRAND TOTAL ---
 const HOTEL_TAX_RATE = 0.10;
 const PPN_RATE = 0.11;
