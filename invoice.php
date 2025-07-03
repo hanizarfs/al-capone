@@ -1,48 +1,62 @@
 <?php
 session_start();
 
-// --- 1. VALIDATE THE POST REQUEST ---
+// --- NEW LOGIC TO HANDLE DATA FROM SESSION OR POST ---
 
-// This page should only be accessed via a POST request from booking.php
-if ($_SERVER["REQUEST_METHOD"] !== "POST") {
-    // If accessed directly, redirect to the rooms page
+$source_data = []; // An empty array to hold our data source
+
+// Check if we are returning from the booking creation script
+if (isset($_SESSION['invoice_data'])) {
+    // If yes, use the data stored in the session
+    $source_data = $_SESSION['invoice_data'];
+    // IMPORTANT: Unset the session data so it's not reused on a page refresh
+    unset($_SESSION['invoice_data']);
+} 
+// Else, check if this is the first visit from booking.php
+else if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    // If yes, use the fresh data from the POST request
+    $source_data = $_POST;
+} 
+// If there's no data from session or post, the page was accessed incorrectly
+else {
     header('Location: rooms.php');
     exit;
 }
 
-// --- 2. RETRIEVE & SANITIZE BOOKING DATA ---
-// Get all the data sent from the booking.php form
-$room_id = htmlspecialchars($_POST['room_id'] ?? 'N/A');
-$room_name = htmlspecialchars($_POST['room_name'] ?? 'N/A');
-$price_per_night = (float)($_POST['price_per_night'] ?? 0);
-$total_nights = (int)($_POST['total_nights'] ?? 0);
-$subtotal = (float)($_POST['total_price'] ?? 0);
+// --- Now, retrieve all data from our chosen $source_data array ---
+$room_id = htmlspecialchars($source_data['room_id'] ?? 'N/A');
+$room_name = htmlspecialchars($source_data['room_name'] ?? 'N/A');
+$price_per_night = (float)($source_data['price_per_night'] ?? 0);
+$total_nights = (int)($source_data['total_nights'] ?? 0);
+$subtotal = (float)($source_data['total_price'] ?? 0);
 
-$full_name = htmlspecialchars($_POST['full_name'] ?? '');
-$email = htmlspecialchars($_POST['email'] ?? '');
-$phone = htmlspecialchars($_POST['phone'] ?? '');
-$checkin_date = htmlspecialchars($_POST['checkin_date'] ?? '');
-$checkout_date = htmlspecialchars($_POST['checkout_date'] ?? '');
+$full_name = htmlspecialchars($source_data['full_name'] ?? '');
+$email = htmlspecialchars($source_data['email'] ?? '');
+$phone = htmlspecialchars($source_data['phone'] ?? '');
+$checkin_date = htmlspecialchars($source_data['checkin_date'] ?? '');
+$checkout_date = htmlspecialchars($source_data['checkout_date'] ?? '');
 
-// Security: If essential data is missing, redirect.
+// If essential data is still missing, redirect
 if ($total_nights <= 0 || $subtotal <= 0) {
     header('Location: rooms.php');
     exit;
 }
 
-
-// --- 3. CALCULATE TAXES AND GRAND TOTAL ---
-const HOTEL_TAX_RATE = 0.10; // 10% Local Hotel Tax
-const PPN_RATE = 0.11;       // 11% Value-Added Tax
+// --- CALCULATE TAXES AND GRAND TOTAL (This part remains the same) ---
+const HOTEL_TAX_RATE = 0.10;
+const PPN_RATE = 0.11;
 
 $hotel_tax = $subtotal * HOTEL_TAX_RATE;
 $ppn = $subtotal * PPN_RATE;
 $grand_total = $subtotal + $hotel_tax + $ppn;
 
-// Generate a unique invoice ID
-$invoice_id = 'INV-' . strtoupper(uniqid());
+// Use the invoice_id from the source data, or generate a new one if it doesn't exist yet
+$invoice_id = htmlspecialchars($source_data['invoice_id'] ?? 'INV-' . strtoupper(uniqid()));
+
+
 
 ?>
+<!-- The rest of your invoices.php HTML file remains exactly the same -->
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
     <head>
@@ -102,9 +116,9 @@ $invoice_id = 'INV-' . strtoupper(uniqid());
                                     <div class="row mb-4">
                                         <div class="col-sm-6">
                                             <h5 class="mb-3">Billed To:</h5>
-                                            <p class="mb-1"><strong><?= $full_name ?></strong></p>
-                                            <p class="mb-1"><?= $email ?></p>
-                                            <p class="mb-1"><?= $phone ?></p>
+                                            <p class="mb-1"><strong><?= htmlspecialchars($_SESSION['first_name']. '' . $_SESSION['last_name']) ?></strong></p>
+                                            <p class="mb-1"><?= htmlspecialchars($_SESSION['email']) ?></p>
+                                            <p class="mb-1"><?= htmlspecialchars($_SESSION['phone']) ?></p>
                                         </div>
                                         <div class="col-sm-6 text-sm-end">
                                             <p class="mb-1"><strong>Invoice ID:</strong> <?= $invoice_id ?></p>
@@ -168,16 +182,11 @@ $invoice_id = 'INV-' . strtoupper(uniqid());
                                     <form action="CRUD/booking_create.php" method="post">
                                         <!-- Pass all data again as hidden fields to the final creation script -->
                                         <input type="hidden" name="invoice_id" value="<?= $invoice_id ?>">
-                                        <input type="hidden" name="full_name" value="<?= $full_name ?>">
-                                        <input type="hidden" name="email" value="<?= $email ?>">
-                                        <input type="hidden" name="phone" value="<?= $phone ?>">
+                                        <input type="hidden" name="user_id" value="<?= $user['id'] ?>">
                                         <input type="hidden" name="room_id" value="<?= $room_id ?>">
                                         <input type="hidden" name="checkin_date" value="<?= $checkin_date ?>">
                                         <input type="hidden" name="checkout_date" value="<?= $checkout_date ?>">
-                                        <input type="hidden" name="total_nights" value="<?= $total_nights ?>">
                                         <input type="hidden" name="subtotal" value="<?= $subtotal ?>">
-                                        <input type="hidden" name="hotel_tax" value="<?= $hotel_tax ?>">
-                                        <input type="hidden" name="ppn" value="<?= $ppn ?>">
                                         <input type="hidden" name="grand_total" value="<?= $grand_total ?>">
 
                                         <h4 class="mb-3">Select Payment Method</h4>
