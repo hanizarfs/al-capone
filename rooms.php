@@ -1,23 +1,13 @@
 <?php
-// --- 1. DATABASE CONNECTION & DATA FETCHING ---
-
-// Include your database configuration file
-// Make sure the path is correct relative to this rooms.php file.
+session_start();
 require_once('config.php');
+
 
 // Prepare the SQL query to get all rooms, ordered by price
 $sql = "SELECT id, name, price, description FROM rooms ORDER BY price ASC";
 
 // Execute the query
-$result = $mysqli->query($sql);
-
-// The $result variable now holds the room data from the database.
-// We will loop through it in the HTML section below.
-?>
-
-<?php
-session_start();
-require_once('config.php');
+$room_result = $mysqli->query($sql);
 
 $user = null;
 $user_id = null;
@@ -233,8 +223,8 @@ $mysqli->close();
 
                 <div class="row">
                     <!-- --- 2. PHP LOOP TO GENERATE CARDS --- -->
-                    <?php if ($result && $result->num_rows > 0): ?>
-                        <?php while ($room = $result->fetch_assoc()): ?>
+                    <?php if ($room_result && $room_result->num_rows > 0): ?>
+                        <?php while ($room = $room_result->fetch_assoc()): ?>
                             <div class="col-lg-3 col-md-6 mb-4 d-flex align-items-stretch">
                                 <div class="card h-100 w-100 shadow-sm border-0">
                                     <!-- In a real app, you'd have an image column in your DB. For now, we use a placeholder. -->
