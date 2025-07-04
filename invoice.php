@@ -7,6 +7,7 @@ $success_message = isset($_SESSION['success_message']) ? $_SESSION['success_mess
 $source_data = [];
 if (isset($_SESSION['invoice_data'])) {
     $source_data = $_SESSION['invoice_data'];
+    $payment_method = $source_data['payment_method'];
     unset($_SESSION['invoice_data']);
 } else if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $source_data = $_POST;
@@ -193,7 +194,9 @@ $mysqli->close();
                                     <input type="hidden" name="checkout_date" value="<?= $checkout_date ?>">
                                     <input type="hidden" name="subtotal" value="<?= $subtotal ?>">
                                     <input type="hidden" name="grand_total" value="<?= $grand_total ?>">
-
+                                    <?php if(isset($_SESSION['paid'])){?>
+                                    <h4 class="mb-3"> Has been paid with: <?= $payment_method ?></h4>
+                                    <?php unset($_SESSION['paid']);}else{?>
                                     <h4 class="mb-3">Select Payment Method</h4>
                                     <div class="list-group">
                                         <label class="list-group-item d-flex gap-2">
@@ -222,6 +225,7 @@ $mysqli->close();
                                     <div class="d-grid mt-4">
                                         <button type="submit" class="btn bg-blue btn-lg">Confirm and Pay Rp <?= number_format($grand_total, 0, ',', '.') ?></button>
                                     </div>
+                                    <?php };?>
                                 </form>
                             </div>
                         </div>
