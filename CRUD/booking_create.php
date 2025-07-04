@@ -21,7 +21,7 @@ $payment_method = trim($_POST['payment_method']);
 
 // The INSERT statement now includes the `subtotal` column to match your table structure
 $insert_stmt = $mysqli->prepare(
-    "INSERT INTO booking_logs(invoice_id, user_id, room_type, checkin_date, checkout_date, subtotal, grand_total, payment_method) 
+    "INSERT INTO bookings(invoice_id, user_id, room_type, checkin_date, checkout_date, subtotal, grand_total, payment_method) 
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
 );
 
@@ -35,6 +35,7 @@ if ($insert_stmt->execute()) {
     
     // 2. Store all the original POST data so the invoice page can redisplay it
     $_SESSION['invoice_data'] = $_POST;
+    $_SESSION['paid'] = true;
     
     // 3. Redirect back to the invoice page
     header('Location: ../invoice.php');
