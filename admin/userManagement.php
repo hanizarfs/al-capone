@@ -277,7 +277,7 @@ $result = $mysqli->query($sql);
                             ?>
                                     <tr>
                                         <th scope="row"><?php echo $row_number++; ?></th>
-                                        
+
                                         <td><?php if($user_query['status'] == 0){ echo "admin";}else{echo "customer";} ?></td>
                                         
                                         <td><?php echo htmlspecialchars($user_query['username']); ?></td>
@@ -304,7 +304,7 @@ $result = $mysqli->query($sql);
                                                     <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Deactive</div>
                                                 </a>
                                             <?php } else { ?>
-                                                <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn" data-id="<?php echo $user_query['id']; ?>" data-username="<?php echo htmlspecialchars($user_query['username']); ?>">
+                                                <a href="javascript:void(0);" class="btn bg-success w-auto active-btn" data-id="<?php echo $user_query['id']; ?>" data-username="<?php echo htmlspecialchars($user_query['username']); ?>">
                                                     <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Reactivate</div>
                                                 <?php } ?>
                                         </td>
@@ -315,6 +315,7 @@ $result = $mysqli->query($sql);
                                 ?>
                                 <tr>
                                     <td colspan-="5" class="text-center">0</td>
+                                    <td colspan-="5" class="text-center">No users found</td>
                                     <td colspan-="5" class="text-center">No users found</td>
                                     <td colspan-="5" class="text-center">No users found</td>
                                     <td colspan-="5" class="text-center">No users found</td>
@@ -440,6 +441,61 @@ $result = $mysqli->query($sql);
             });
         });
 
+        const activeButtons = document.querySelectorAll('.active-btn');
+        activeButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior
+                e.preventDefault();
+
+                // Get the user ID and username from the data attributes
+                const userId = this.dataset.id;
+                const username = this.dataset.username;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to reactivate the user: ${username}?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, reactivate it!'
+                }).then((result) => {
+                    // Step 1: Check if the admin confirmed the first dialog.
+                    if (result.isConfirmed) {
+
+                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                        Swal.fire({
+                            input: "textarea",
+                            inputLabel: "Reason for Reactivation",
+                            inputPlaceholder: "Type your reason here...",
+                            inputAttributes: {
+                                "aria-label": "Type your reason here"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Submit Reactivation',
+                            // Optional: Add validation to ensure a reason is entered
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return "You need to write a reason!";
+                                }
+                            }
+                        }).then((reasonResult) => {
+                            // Step 3: Check if the second dialog was confirmed and has a value.
+                            if (reasonResult.isConfirmed && reasonResult.value) {
+
+                                // Get the reason text from the textarea.
+                                const reason = reasonResult.value;
+
+                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                const encodedReason = encodeURIComponent(reason);
+
+                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                window.location.href = `CRUD/user_reactivate.php?id=${userId}&reason=${encodedReason}`;
+                            }
+                        });
+                    }
+                });
+            });
+        });
         // swal delete
         <?php if (!empty($success_message)): ?>
             Swal.fire({
