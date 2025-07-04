@@ -19,15 +19,6 @@
     <link rel="stylesheet" href="./assets/css/style.css" />
 
     <style>
-        .hero-about {
-            background-image: url('https://source.unsplash.com/1600x700/?resort,luxury,nature');
-            background-size: cover;
-            background-position: center;
-            height: 60vh;
-            position: relative;
-            color: white;
-        }
-
         .overlay {
             position: absolute;
             top: 0;
@@ -42,27 +33,37 @@
             z-index: 2;
         }
 
-        footer {
-            background-color: #1e293b;
+        .hero-about {
+            position: relative;
+            background-image: url('https://plus.unsplash.com/premium_photo-1681922761181-ee59fa91edc7?w=1200&auto=format&fit=crop&q=60');
+            background-size: cover;
+            background-position: center;
+            height: 60vh;
             color: white;
-            padding: 2rem 0;
+            z-index: 1;
         }
 
-        footer a {
-            color: #cbd5e1;
-            text-decoration: none;
+        .hero-about::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* dark overlay */
+            z-index: 2;
         }
 
-        footer a:hover {
-            color: #ffffff;
+        .hero-about .hero-text {
+            position: relative;
+            z-index: 3;
         }
     </style>
+
 </head>
 
 <body>
 
     <!-- Start Navbar -->
-    <nav class="navbar navbar-expand-lg bg-body-tertiary z-1000 fixed-top">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary z-1000 fixed-top shadow-sm">
         <div class="container">
             <!-- Logo -->
             <a class="navbar-brand fw-semibold d-flex justify-content-center align-items-center" href="index.php">
@@ -172,7 +173,6 @@
 
     <!-- Hero Section -->
     <section class="hero-about d-flex align-items-center justify-content-center text-center">
-        <div class="overlay"></div>
         <div class="container hero-text">
             <h1 class="display-4 fw-bold">About Al Capone Resort</h1>
             <p class="lead">A Sanctuary of Luxury, Tranquility & Natural Beauty</p>
@@ -186,7 +186,7 @@
             <p class="fs-5 text-center mb-4">Founded in 2015, Al Capone Resort was born out of a passion to create a luxurious escape surrounded by nature. Nestled in a serene environment, our resort combines modern comfort with local charm to deliver unforgettable experiences to travelers from around the world.</p>
             <div class="row mt-5">
                 <div class="col-md-6 mb-4">
-                    <img src="https://source.unsplash.com/800x500/?luxury-resort,spa" class="img-fluid rounded shadow" alt="Resort Image" />
+                    <img src="https://images.unsplash.com/photo-1652789728615-d988a7744c26?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHJlc29ydCUyMGZhY2lsaXRlc3xlbnwwfHwwfHx8MA%3D%3D" class="img-fluid w-100 shadow" alt="Resort Facilities">
                 </div>
                 <div class="col-md-6">
                     <h4 class="fw-semibold mb-3">What Makes Us Special</h4>
@@ -208,13 +208,13 @@
             <h2 class="mb-4 fw-bold">Our Vision & Commitment</h2>
             <div class="row justify-content-center">
                 <div class="col-md-5 mb-3">
-                    <div class="p-4 bg-white shadow rounded h-100">
+                    <div class="p-4 card shadow rounded h-100">
                         <h5 class="fw-bold">Vision</h5>
                         <p>To be the leading resort in Southeast Asia, offering world-class hospitality in harmony with nature.</p>
                     </div>
                 </div>
                 <div class="col-md-5 mb-3">
-                    <div class="p-4 bg-white shadow rounded h-100">
+                    <div class="p-4 card shadow rounded h-100">
                         <h5 class="fw-bold">Mission</h5>
                         <p>To provide unmatched comfort, personalized services, and unforgettable moments for every guest through sustainable and ethical tourism practices.</p>
                     </div>
@@ -229,27 +229,29 @@
             <h2 class="mb-4 fw-bold">Meet Our Team</h2>
             <div class="row g-4">
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/300x300/?portrait,ceo" class="card-img-top" alt="CEO">
-                        <div class="card-body">
+                    <div class="card border-0 shadow-sm p-3">
+                        <img src="https://randomuser.me/api/portraits/men/5.jpg" class="rounded-circle d-block mx-auto" width="100" alt="CEO">
+                        <div class="mt-3 text-center">
                             <h5 class="card-title mb-0">Michael Santos</h5>
                             <p class="text-muted">Founder & CEO</p>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/300x300/?portrait,manager" class="card-img-top" alt="Manager">
-                        <div class="card-body">
+                    <div class="card border-0 shadow-sm p-3">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" class="rounded-circle d-block mx-auto" width="100" alt="Manager">
+                        <div class="mt-3 text-center">
                             <h5 class="card-title mb-0">Julia Hartono</h5>
                             <p class="text-muted">Resort Manager</p>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-4">
-                    <div class="card border-0 shadow-sm">
-                        <img src="https://source.unsplash.com/300x300/?portrait,chef" class="card-img-top" alt="Chef">
-                        <div class="card-body">
+                    <div class="card border-0 shadow-sm p-3">
+                        <img src="https://randomuser.me/api/portraits/men/78.jpg" class="rounded-circle d-block mx-auto" width="100" alt="Chef">
+                        <div class="mt-3 text-center">
                             <h5 class="card-title mb-0">Chef Antonio</h5>
                             <p class="text-muted">Executive Chef</p>
                         </div>
@@ -260,7 +262,7 @@
     </section>
 
     <!-- Footer -->
-    <footer>
+    <footer class="bg-body-tertiary py-4">
         <div class="container">
             <div class="row">
                 <div class="col-md-6 mb-3 mb-md-0">
@@ -271,10 +273,10 @@
                 </div>
                 <div class="col-md-6 text-md-end">
                     <h6>Quick Links</h6>
-                    <a href="index.html">Home</a> |
-                    <a href="rooms.php">Rooms</a> |
-                    <a href="gallery.php">Gallery</a> |
-                    <a href="contact.php">Contact</a>
+                    <a href="index.html" class="text-decoration-none">Home</a> |
+                    <a href="rooms.php" class="text-decoration-none">Rooms</a> |
+                    <a href="gallery.php" class="text-decoration-none">Gallery</a> |
+                    <a href="faq.php" class="text-decoration-none">FAQ</a>
                 </div>
             </div>
             <hr class="my-4 border-light" />

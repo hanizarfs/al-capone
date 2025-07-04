@@ -1,18 +1,5 @@
 <?php
-// --- 1. DATABASE CONNECTION & DATA FETCHING ---
-
-// Include your database configuration file
-// Make sure the path is correct relative to this rooms.php file.
-require_once('config.php');
-
-// Prepare the SQL query to get all rooms, ordered by price
-$sql = "SELECT id, name, price, description FROM rooms ORDER BY price ASC";
-
-// Execute the query
-$result = $mysqli->query($sql);
-
-// The $result variable now holds the room data from the database.
-// We will loop through it in the HTML section below.
+session_start();
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
@@ -20,7 +7,7 @@ $result = $mysqli->query($sql);
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Our Rooms | Al Capone</title>
+    <title>FAQ | Al Capone</title>
     <link rel="icon" type="image/x-icon" href="./assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
@@ -32,25 +19,10 @@ $result = $mysqli->query($sql);
     <!-- CSS -->
     <link rel="stylesheet" href="./assets/css/style.css" />
 
-    <!-- Custom Style for Button Hover Effect -->
     <style>
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-        }
-
-        .hero-text {
-            position: relative;
-            z-index: 2;
-        }
-
         .hero-about {
             position: relative;
-            background-image: url('https://plus.unsplash.com/premium_photo-1687960116689-38c34910d26f?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-image: url('https://images.unsplash.com/photo-1529316275402-0462fcc4abd6?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
             background-size: cover;
             background-position: center;
             height: 60vh;
@@ -63,7 +35,6 @@ $result = $mysqli->query($sql);
             position: absolute;
             inset: 0;
             background-color: rgba(0, 0, 0, 0.5);
-            /* dark overlay */
             z-index: 2;
         }
 
@@ -101,13 +72,13 @@ $result = $mysqli->query($sql);
                         <a class="nav-link" href="about.php">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link active" href="rooms.php">Rooms</a>
+                        <a class="nav-link" href="rooms.php">Rooms</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="gallery.php">Gallery</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="faq.php">FAQ</a>
+                        <a class="nav-link active" href="faq.php">FAQ</a>
                     </li>
                 </ul>
 
@@ -185,92 +156,80 @@ $result = $mysqli->query($sql);
     </nav>
     <!-- End Navbar -->
 
-    <!-- Start Main -->
-    <main>
+    <!-- Hero Section -->
+    <section class="hero-about d-flex align-items-center justify-content-center text-center">
+        <div class="container hero-text">
+            <h1 class="display-4 fw-bold">Frequently Asked Questions</h1>
+            <p class="lead">Find answers to the most common questions about Al Capone Resort</p>
+        </div>
+    </section>
 
-        <!-- Hero Section -->
-        <section class="hero-about d-flex align-items-center justify-content-center text-center">
-            <div class="container hero-text">
-                <h1 class="display-4 fw-bold">Explore Our Rooms</h1>
-                <p class="lead">Luxury, Comfort, and Convenience</p>
-                <a href="#rooms" class="btn btn-light btn-lg">See Available Rooms</a>
-            </div>
-        </section>
+    <!-- FAQ Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="accordion" id="faqAccordion">
 
-        <section id="rooms" class="py-5 bg-light">
-            <div class="container">
-                <div class="row text-center mb-5">
-                    <div class="col">
-                        <h1 class="fw-bold">Explore Our Rooms</h1>
-                        <p class="lead text-muted">Find the perfect space for your stay. We offer a variety of rooms to suit your needs, each designed for your comfort and convenience.</p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <!-- --- 2. PHP LOOP TO GENERATE CARDS --- -->
-                    <?php if ($result && $result->num_rows > 0): ?>
-                        <?php while ($room = $result->fetch_assoc()): ?>
-                            <div class="col-lg-3 col-md-6 mb-4 d-flex align-items-stretch">
-                                <div class="card h-100 w-100 shadow-sm border-0">
-                                    <!-- In a real app, you'd have an image column in your DB. For now, we use a placeholder. -->
-                                    <img src="assets/img/<?= urlencode($room['id']); ?>.png" class="card-img-top fixed-image" alt="<?= htmlspecialchars($room['name']); ?>">
-
-                                    <div class="card-body d-flex flex-column">
-                                        <h5 class="card-title fw-bold"><?= htmlspecialchars($room['name']); ?></h5>
-                                        <p class="card-text text-primary fw-bold fs-5 mb-2">Rp <?= number_format($room['price'], 0, ',', '.'); ?> / night</p>
-                                        <p class="card-text small text-muted"><?= htmlspecialchars($room['description']); ?></p>
-                                    </div>
-                                    <div class="mt-auto p-3">
-                                        <!-- This link acts as a button and redirects to booking.php -->
-                                        <!-- It passes the unique ID of the room in the URL -->
-                                        <a href="booking.php?room_id=<?= htmlspecialchars($room['id']); ?>" class="btn btn-outline-blue w-100 fw-semibold">
-                                            Order Now
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        <?php endwhile; ?>
-                    <?php else: ?>
-                        <!-- This message is shown if no rooms are found in the database -->
-                        <div class="col-12">
-                            <div class="alert alert-warning text-center" role="alert">
-                                We're sorry, there are currently no rooms available. Please check back later.
-                            </div>
+                <!-- FAQ Item 1 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="true" aria-controls="faq1">
+                            What time is check-in and check-out?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Check-in starts at 2:00 PM and check-out is at 12:00 PM.
                         </div>
-                    <?php endif; ?>
-                    <!-- --- END OF PHP LOOP --- -->
-                </div>
-            </div>
-        </section>
-
-        <!-- Facilities Section -->
-        <section class="py-5 bg-light">
-            <div class="container text-center">
-                <h2 class="fw-bold mb-4">Facilities</h2>
-                <div class="row g-4">
-                    <div class="col-md-3">
-                        <i class="bi bi-wifi fs-2 text-primary"></i>
-                        <p>Free Wi-Fi</p>
-                    </div>
-                    <div class="col-md-3">
-                        <i class="bi bi-cup-hot fs-2 text-primary"></i>
-                        <p>Restaurant</p>
-                    </div>
-                    <div class="col-md-3">
-                        <i class="bi bi-flower1 fs-2 text-primary"></i>
-                        <p>Spa & Wellness</p>
-                    </div>
-                    <div class="col-md-3">
-                        <i class="bi bi-car-front fs-2 text-primary"></i>
-                        <p>Free Parking</p>
                     </div>
                 </div>
 
-            </div>
-        </section>
-    </main>
-    <!-- End Main -->
+                <!-- FAQ Item 2 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingTwo">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                            Is breakfast included in the room rate?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Yes, complimentary breakfast is included for all room types.
+                        </div>
+                    </div>
+                </div>
 
+                <!-- FAQ Item 3 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingThree">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                            Do you offer airport shuttle service?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Yes, we offer airport shuttle service for an additional charge. Please contact our staff in advance.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingFour">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+                            Is there free Wi-Fi at the resort?
+                        </button>
+                    </h2>
+                    <div id="faq4" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                        <div class="accordion-body">
+                            Absolutely! High-speed Wi-Fi is available throughout the resort.
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
     <!-- Footer -->
     <footer class="bg-body-tertiary py-4">
         <div class="container">
@@ -302,11 +261,3 @@ $result = $mysqli->query($sql);
 </body>
 
 </html>
-<?php
-// --- 3. CLEAN UP ---
-// Free the result set from memory and close the database connection
-if ($result) {
-    $result->free();
-}
-$mysqli->close();
-?>

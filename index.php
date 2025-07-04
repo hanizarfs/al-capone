@@ -109,6 +109,13 @@ $mysqli->close();
 
 <body>
 
+    <!-- WhatsApp Button -->
+    <a href="https://wa.me/628512345678" target="_blank"
+        class="btn btn-success rounded-circle shadow d-flex align-items-center justify-content-center"
+        style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; z-index: 100;">
+        <i class="bi bi-whatsapp fs-3"></i>
+    </a>
+
     <!-- Start Navbar -->
     <nav class="navbar navbar-expand-lg bg-body-tertiary z-1000 fixed-top shadow-sm">
         <div class="container">
@@ -331,6 +338,15 @@ $mysqli->close();
         </div>
     </section>
 
+    <!-- CTA Section -->
+    <section class="py-5 bg-blue text-white text-center">
+        <div class="container">
+            <h2 class="mb-3">Ready to Make Your Dream Stay a Reality?</h2>
+            <p class="mb-4">Book your room today and enjoy unforgettable luxury and comfort.</p>
+            <a href="rooms.php" class="btn btn-light">Check Room Availability</a>
+        </div>
+    </section>
+
     <!-- Testimonials -->
     <section class="py-5">
         <div class="container text-center">
@@ -427,17 +443,8 @@ $mysqli->close();
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="py-5 bg-blue text-white text-center">
-        <div class="container">
-            <h2 class="mb-3">Ready to Make Your Dream Stay a Reality?</h2>
-            <p class="mb-4">Book your room today and enjoy unforgettable luxury and comfort.</p>
-            <a href="rooms.php" class="btn btn-light">Check Room Availability</a>
-        </div>
-    </section>
-
     <!-- Footer -->
-    <footer>
+    <footer class="bg-body-tertiary py-4">
         <div class="container">
             <div class="row">
                 <div class="col-md-6 mb-3 mb-md-0">
@@ -448,10 +455,10 @@ $mysqli->close();
                 </div>
                 <div class="col-md-6 text-md-end">
                     <h6>Quick Links</h6>
-                    <a href="index.php">Home</a> |
-                    <a href="rooms.php">Rooms</a> |
-                    <a href="gallery.php">Gallery</a> |
-                    <a href="contact.php">Contact</a>
+                    <a href="index.html" class="text-decoration-none">Home</a> |
+                    <a href="rooms.php" class="text-decoration-none">Rooms</a> |
+                    <a href="gallery.php" class="text-decoration-none">Gallery</a> |
+                    <a href="faq.php" class="text-decoration-none">FAQ</a>
                 </div>
             </div>
             <hr class="my-4 border-light" />
