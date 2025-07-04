@@ -14,6 +14,31 @@ $result = $mysqli->query($sql);
 // The $result variable now holds the room data from the database.
 // We will loop through it in the HTML section below.
 ?>
+
+<?php
+session_start();
+require_once('config.php');
+
+$user = null;
+$user_id = null;
+$user_status = null;
+
+if (isset($_SESSION['user_id']) && isset($_SESSION['user_status'])) {
+    $user_id = $_SESSION['user_id'];
+    $user_status = $_SESSION['user_status'];
+
+    $stmt = $mysqli->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+}
+
+$mysqli->close();
+
+?>
+
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 
@@ -308,5 +333,5 @@ $result = $mysqli->query($sql);
 if ($result) {
     $result->free();
 }
-$mysqli->close();
+// $mysqli->close();
 ?>

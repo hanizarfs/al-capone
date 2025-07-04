@@ -110,7 +110,7 @@ $mysqli->close();
 <body>
 
     <!-- WhatsApp Button -->
-    <a href="https://wa.me/628512345678" target="_blank"
+    <a href="https://wa.me/6281229700588" target="_blank"
         class="btn btn-success rounded-circle shadow d-flex align-items-center justify-content-center"
         style="position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px; z-index: 100;">
         <i class="bi bi-whatsapp fs-3"></i>
@@ -481,7 +481,10 @@ $mysqli->close();
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev',
             },
-            autoPlay: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+            },
             breakpoints: {
                 // when window width is >= 320px
                 768: {

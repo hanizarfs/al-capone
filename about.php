@@ -1,6 +1,29 @@
+<?php
+session_start();
+require_once('config.php');
+
+$user = null;
+$user_id = null;
+$user_status = null;
+
+if (isset($_SESSION['user_id']) && isset($_SESSION['user_status'])) {
+    $user_id = $_SESSION['user_id'];
+    $user_status = $_SESSION['user_status'];
+
+    $stmt = $mysqli->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+}
+
+$mysqli->close();
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
-
 
 <head>
     <meta charset="UTF-8" />
@@ -232,7 +255,7 @@
                     <div class="card border-0 shadow-sm p-3">
                         <img src="https://randomuser.me/api/portraits/men/5.jpg" class="rounded-circle d-block mx-auto" width="100" alt="CEO">
                         <div class="mt-3 text-center">
-                            <h5 class="card-title mb-0">Michael Santos</h5>
+                            <h5 class="card-title mb-0">Rizky</h5>
                             <p class="text-muted">Founder & CEO</p>
                         </div>
                     </div>
@@ -242,7 +265,7 @@
                     <div class="card border-0 shadow-sm p-3">
                         <img src="https://randomuser.me/api/portraits/women/68.jpg" class="rounded-circle d-block mx-auto" width="100" alt="Manager">
                         <div class="mt-3 text-center">
-                            <h5 class="card-title mb-0">Julia Hartono</h5>
+                            <h5 class="card-title mb-0">Kartini</h5>
                             <p class="text-muted">Resort Manager</p>
                         </div>
                     </div>
@@ -252,7 +275,7 @@
                     <div class="card border-0 shadow-sm p-3">
                         <img src="https://randomuser.me/api/portraits/men/78.jpg" class="rounded-circle d-block mx-auto" width="100" alt="Chef">
                         <div class="mt-3 text-center">
-                            <h5 class="card-title mb-0">Chef Antonio</h5>
+                            <h5 class="card-title mb-0">Chef Alvin</h5>
                             <p class="text-muted">Executive Chef</p>
                         </div>
                     </div>

@@ -1,6 +1,27 @@
 <?php
 session_start();
+require_once('config.php');
+
+$user = null;
+$user_id = null;
+$user_status = null;
+
+if (isset($_SESSION['user_id']) && isset($_SESSION['user_status'])) {
+    $user_id = $_SESSION['user_id'];
+    $user_status = $_SESSION['user_status'];
+
+    $stmt = $mysqli->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+    $stmt->close();
+}
+
+$mysqli->close();
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 
@@ -165,7 +186,7 @@ session_start();
     </section>
 
     <!-- FAQ Section -->
-    <section class="py-5 bg-light">
+    <section class="py-5">
         <div class="container">
             <div class="accordion" id="faqAccordion">
 
