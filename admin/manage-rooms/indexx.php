@@ -1,17 +1,29 @@
 <?php
 session_start();
 
+//Delete user swal 
+$success_message = '';
+if (isset($_SESSION['success_message'])) {
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+$error_message = '';
+if (isset($_SESSION['error_message'])) {
+    $error_message = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
+
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 
 if ($_SESSION['user_status'] == 1) {
-    header('location: ../index.php');
+    header('location: ../../index.php');
     exit;
 }
 
-require_once('../config.php');
+require_once('../../config.php');
 
 $user_id = $_SESSION['user_id'];
 
@@ -22,22 +34,27 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 $stmt->close();
-$mysqli->close();
 
 if (!$user) {
     session_destroy();
     header('location: ../login.php');
     exit;
 }
+
+// Query ambil semua data dari tabel rooms
+$sql = "SELECT id, name, price, description, created_at FROM rooms ORDER BY created_at DESC";
+$result = $mysqli->query($sql);
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Al Capone</title>
-    <link rel="icon" type="image/x-icon" href="../assets/img/Logo.webp" />
+    <title>Manage Rooms | Al Capone</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" />
@@ -46,14 +63,12 @@ if (!$user) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../assets/css/style.css" />
-
+    <link rel="stylesheet" href="../../assets/css/style.css" />
 </head>
 
 <body>
-
     <!-- Aside -->
-    <?php include_once __DIR__ . '/sidebar.php'; ?>
+    <?php include_once __DIR__ . '/../sidebar.php'; ?>
     <!-- End of Aside -->
 
     <main class="col-lg-10" id="main">
@@ -64,7 +79,7 @@ if (!$user) {
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h4 class="fw-semibold mb-0">Dashboard</h4>
+                <h3 class="mb-0">Manage Rooms</h3>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -112,7 +127,7 @@ if (!$user) {
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                             <li>
-                                <button type="button" class="dropdown-item d-flex align-items-center">
+                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
                                     <i class="bi bi-person me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Profile
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -121,7 +136,7 @@ if (!$user) {
                                 </button>
                             </li>
                             <li>
-                                <a href="#" onclick="logout()" class="dropdown-item d-flex align-items-center">
+                                <a href=" /logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
                                     <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Logout
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -140,13 +155,65 @@ if (!$user) {
         <!-- End NavBar -->
 
         <div class="container">
-            <h1>Halo</h1>
+
+            <!-- Tabel Rooms -->
+            <div class="table-responsive">
+                <table id="dataTables" class="table table-striped border">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Room ID</th>
+                            <th scope="col">Room Name</th>
+                            <th scope="col">Price (Rp)</th>
+                            <th scope="col">Description</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($result && $result->num_rows > 0): ?>
+                            <?php $no = 1; ?>
+                            <?php while ($room = $result->fetch_assoc()): ?>
+                                <tr>
+                                    <th scope="row"><?= $no++; ?></th>
+                                    <td><?= htmlspecialchars($room['id']); ?></td>
+                                    <td><?= htmlspecialchars($room['name']); ?></td>
+                                    <td>Rp <?= number_format($room['price'], 0, ',', '.'); ?></td>
+                                    <td><?= htmlspecialchars($room['description']); ?></td>
+                                    <td class="d-flex gap-2">
+                                        <a href="manage-rooms/detail.php?id=<?= urlencode($room['id']); ?>" class="btn btn-primary btn-sm">
+                                            <i class="bi bi-eye-fill"></i> Detail
+                                        </a>
+                                        <a href="manage-rooms/edit.php?id=<?= urlencode($room['id']); ?>" class="btn btn-warning btn-sm text-dark">
+                                            <i class="bi bi-pencil-fill"></i> Edit
+                                        </a>
+                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-room-btn" data-id="<?= htmlspecialchars($room['id']); ?>" data-name="<?= htmlspecialchars($room['name']); ?>">
+                                            <i class="bi bi-trash-fill"></i> Delete
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="7" class="text-center">No rooms found</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
+            <?php
+            // Cleanup
+            if ($result) $result->free();
+            $mysqli->close();
+            ?>
         </div>
+
+
     </main>
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header">
-            <a href="../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
+            <a href="../../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body mt-0">
@@ -175,27 +242,7 @@ if (!$user) {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Main JS -->
-    <script src="../assets/js/main.js"></script>
-
-    <script>
-        function logout() {
-            let theme = localStorage.getItem('theme');
-            console.log('Current theme:', theme);
-            if (theme == 'dark') {
-                console.log("halooo");
-                localStorage.removeItem('theme');
-                console.log("tesss");
-                localStorage.setItem('themess', 'red');
-                localStorage.clear('theme');
-                // localStorage.setItem('theme', 'red'); // Atur ulang
-            }
-            localStorage.setItem('themes', 'blue');
-            localStorage.setItem('theme', 'black');
-
-            // Redirect
-            // window.location.href = '../logout.php';
-        }
-    </script>
+    <script src="../../assets/js/main.js"></script>
 
     <script>
         // Get the current URL path (without the base URL)
