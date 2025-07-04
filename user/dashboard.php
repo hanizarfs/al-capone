@@ -6,6 +6,22 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     exit;
 }
 
+$success_message = '';
+if (isset($_SESSION['success_message'])) {
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+$error_message = '';
+if (isset($_SESSION['error_message'])) {
+    $error_message = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('location: ../login.php');
+    exit;
+}
+
 require_once('../config.php');
 
 $user_id = $_SESSION['user_id'];
@@ -17,13 +33,19 @@ $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
 $stmt->close();
-$mysqli->close();
 
 if (!$user) {
     session_destroy();
     header('location: ../login.php');
     exit;
 }
+
+$query_stmt = $mysqli->prepare("SELECT id, room_type, checkin_date, checkout_date, status, appeal_reason, rejected_reason FROM bookings WHERE user_id = ? AND  status != 'Inactive'");
+$query_stmt->bind_param("i", $user_id);
+$query_stmt->execute();
+$active_result = $query_stmt->get_result();
+
+$query_stmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -147,25 +169,64 @@ if (!$user) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Room Type</td>
-                        <td>Test</td>
-                        <td>Test</td>
-                        <td>
-                            <a href="manage-rooms/detail.php?id=" class="btn btn-primary btn-sm">
-                                <i class="bi bi-eye-fill"></i> Show Invoice
-                            </a>
-                            <a href="manage-rooms/edit.php?id=" class="btn btn-warning btn-sm text-dark">
-                                <i class="bi bi-pencil-fill"></i> Online Check-In
-                            </a>
-                            <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-room-btn" data-id="" data-name="<?= htmlspecialchars($room['name']); ?>">
-                                <i class="bi bi-trash-fill"></i> Appeal Cancel
-                            </a>
-                        </td>
-                    </tr>
+                    <?php
+
+                    if ($active_result && $active_result->num_rows > 0) {
+                        $row_number = 1;
+
+                        while ($booking_query = $active_result->fetch_assoc()) {
+
+                    ?>
+                            <tr>
+                                <th scope="row"><?php echo $row_number++; ?></th>
+
+                                <td><?php echo htmlspecialchars($booking_query['room_type']); ?></td>
+
+                                <td><?= date('d M', strtotime($booking_query['checkin_date'])) . ' - ' . date('d M Y', strtotime($booking_query['checkout_date'])); ?></td>
+
+                                <td><?php echo htmlspecialchars($booking_query['status']); ?></td>
+
+                                <td>
+                                    <a href="view_invoice.php?id=<?= $booking_query['id'] ?>" class="btn btn-primary btn-sm invoice-btn">
+                                        <i class="bi bi-eye-fill"></i> Show Invoice
+                                    </a>
+                                    <a href="manage-rooms/edit.php?id=" class="btn btn-warning btn-sm text-dark checkin-btn">
+                                        <i class="bi bi-pencil-fill"></i> Online Check-In
+                                    </a>
+                                    <?php if ($booking_query['appeal_reason'] == null) { ?>
+                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm cancel-room-btn" data-id="<?= htmlspecialchars($booking_query['id']); ?>">
+                                            <i class="bi bi-trash-fill"></i> Appeal Cancel
+                                        </a>
+                                    <?php } elseif ($booking_query['rejected_reason'] != null) { ?>
+                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm reject-room-btn" data-id="<?= htmlspecialchars($booking_query['id']); ?>">
+                                            <i class="bi bi-trash-fill"></i> Appeal Rejected
+                                        </a>
+                                    <?php } else { ?>
+                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm appeal-room-btn" data-appeal="<?= htmlspecialchars($booking_query['appeal_reason']); ?>">
+                                            <i class="bi bi-trash-fill"></i> Cancel Appealed
+                                        </a>
+                                    <?php } ?>
+                                </td>
+                            </tr>
+                        <?php
+                        }
+                    } else {
+                        ?>
+                        <tr>
+                            <td colspan-="5" class="text-center">0</td>
+                            <td colspan-="5" class="text-center">No active booking found</td>
+                            <td colspan-="5" class="text-center">No active booking found</td>
+                            <td colspan-="5" class="text-center">No active booking found</td>
+                            <td colspan-="5" class="text-center">--</td>
+                        </tr>
+                    <?php
+                    }
+                    $active_result->free();
+                    $mysqli->close();
+                    ?>
                 </tbody>
             </table>
+
             <p>History Booking</p>
             <table id="dataTables" class="table table-striped border">
                 <thead>
@@ -235,6 +296,99 @@ if (!$user) {
     <script src="../assets/js/main.js"></script>
 
     <script>
+        <?php if (!empty($success_message)): ?>
+            Swal.fire({
+                title: 'Success!',
+                text: <?php echo json_encode($success_message); ?>,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        <?php endif; ?>
+        <?php if (!empty($error_message)): ?>
+            Swal.fire({
+                title: 'Error!',
+                text: <?php echo json_encode($error_message); ?>,
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        <?php endif; ?>
+
+        const cancelButton = document.querySelectorAll('.cancel-room-btn');
+        cancelButton.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior
+                e.preventDefault();
+
+                // Get the user ID and username from the data attributes
+                const bookingId = this.dataset.id;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to cancel this booking?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, please'
+                }).then((result) => {
+                    // Step 1: Check if the admin confirmed the first dialog.
+                    if (result.isConfirmed) {
+
+                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                        Swal.fire({
+                            input: "textarea",
+                            inputLabel: "Reason for Cancellation",
+                            inputPlaceholder: "Type your reason here...",
+                            inputAttributes: {
+                                "aria-label": "Type your reason here"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Submit Appeal',
+                            // Optional: Add validation to ensure a reason is entered
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return "You need to write a reason!";
+                                }
+                            }
+                        }).then((reasonResult) => {
+                            // Step 3: Check if the second dialog was confirmed and has a value.
+                            if (reasonResult.isConfirmed && reasonResult.value) {
+
+                                // Get the reason text from the textarea.
+                                const reason = reasonResult.value;
+
+                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                const encodedReason = encodeURIComponent(reason);
+
+                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                window.location.href = `CRUD/create_appeal.php?id=${bookingId}&reason=${encodedReason}`;
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        // Select all elements with the class '.appeal-room-btn'
+        const appealButtons = document.querySelectorAll('.appeal-room-btn');
+
+        // Loop through the correct variable 'appealButtons'
+        appealButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior if it's an <a> tag
+                e.preventDefault();
+
+                // Get the reason from the data-appeal attribute
+                const reason = this.dataset.appeal;
+
+                Swal.fire({
+                    title: "Cancellation Appeal Reason:",
+                    // Use backticks (`) instead of single quotes (') to correctly display the variable
+                    html: `<pre style="white-space: pre-wrap; text-align: left; margin-left: 1rem;">${reason}</pre>`,
+                    confirmButtonText: 'Close'
+                });
+            });
+        });
+
         // Get the current URL path (without the base URL)
         const currentUrl = window.location.pathname;
 
