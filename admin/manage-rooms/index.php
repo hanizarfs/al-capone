@@ -53,7 +53,7 @@ $result = $mysqli->query($sql);
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manage Rooms | Al Capone</title>
+    <title>User Management | Al Capone</title>
     <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
@@ -62,8 +62,81 @@ $result = $mysqli->query($sql);
     <!-- Bootstrap Icon -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
 
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" />
+
     <!-- CSS -->
     <link rel="stylesheet" href="../../assets/css/style.css" />
+
+    <!-- Style -->
+    <style>
+        body {
+            height: 100%;
+        }
+
+        aside {
+            /* border: 1px yellow solid; */
+            position: fixed;
+            overflow: auto;
+            height: calc(100vh - 12px);
+            justify-content: flex-start;
+            align-self: flex-start;
+        }
+
+        nav {
+            position: sticky;
+        }
+
+        main {
+            position: relative;
+            overflow: visible;
+            margin-left: auto;
+            justify-content: flex-end;
+            align-self: flex-end;
+        }
+
+        #sidebarshow {
+            display: none;
+        }
+
+        .b-example-divider {
+            width: 100%;
+            height: 3rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            border: solid rgba(0, 0, 0, 0.15);
+            border-width: 1px 0;
+            box-shadow: inset 0 0.5em 1.5em rgba(0, 0, 0, 0.1), inset 0 0.125em 0.5em rgba(0, 0, 0, 0.15);
+        }
+
+        .b-example-vr {
+            flex-shrink: 0;
+            width: 1.5em;
+            height: 100vh;
+        }
+
+        .bi {
+            vertical-align: -0.125em;
+            fill: currentColor;
+        }
+
+        @media screen and (max-width: 992px) {
+            #sidebarshow {
+                display: inline;
+            }
+
+            #sidebartoggle {
+                display: none;
+            }
+        }
+
+        #sidebar button:hover {
+            background: darkblue;
+        }
+
+        .dataTables_length {
+            margin-bottom: 12px !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -79,7 +152,7 @@ $result = $mysqli->query($sql);
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h3 class="mb-0">Manage Rooms</h3>
+                <h4 class="fw-semibold mb-0">Manage Rooms</h4>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -136,7 +209,7 @@ $result = $mysqli->query($sql);
                                 </button>
                             </li>
                             <li>
-                                <a href=" /logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                <a href="../../logout.php" type="button" class="dropdown-item d-flex align-items-center" aria-pressed="false">
                                     <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Logout
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -155,8 +228,14 @@ $result = $mysqli->query($sql);
         <!-- End NavBar -->
 
         <div class="container">
+            <!-- Heading for User Management and User Level -->
+            <div class="section-header mb-4">
+                <a href="create.php" class="btn bg-blue w-auto">
+                    <div class="d-flex justify-content-center align-items-center"><i class="bi bi-plus me-1"></i>New Room</div>
+                </a>
+            </div>
 
-            <!-- Tabel Rooms -->
+            <!-- Table for User Management -->
             <div class="table-responsive">
                 <table id="dataTables" class="table table-striped border">
                     <thead>
@@ -179,16 +258,20 @@ $result = $mysqli->query($sql);
                                     <td><?= htmlspecialchars($room['name']); ?></td>
                                     <td>Rp <?= number_format($room['price'], 0, ',', '.'); ?></td>
                                     <td><?= htmlspecialchars($room['description']); ?></td>
-                                    <td class="d-flex gap-2">
-                                        <a href="manage-rooms/detail.php?id=<?= urlencode($room['id']); ?>" class="btn btn-primary btn-sm">
-                                            <i class="bi bi-eye-fill"></i> Detail
-                                        </a>
-                                        <a href="manage-rooms/edit.php?id=<?= urlencode($room['id']); ?>" class="btn btn-warning btn-sm text-dark">
-                                            <i class="bi bi-pencil-fill"></i> Edit
-                                        </a>
-                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-room-btn" data-id="<?= htmlspecialchars($room['id']); ?>" data-name="<?= htmlspecialchars($room['name']); ?>">
-                                            <i class="bi bi-trash-fill"></i> Delete
-                                        </a>
+                                    <td>
+                                        <div class="d-flex justify-content-center align-items-center gap-2">
+                                            <a href="detail.php?id=<?= urlencode($room['id']); ?>" class="btn bg-blue btn-sm">
+                                                <div class="d-flex justify-content-center align-items-center text-white">
+                                                    <i class="bi bi-eye-fill me-1"></i> Detail
+                                                </div>
+                                            </a>
+                                            <a href="edit.php?id=<?= urlencode($room['id']); ?>" class="btn bg-warning w-auto">
+                                                <div class="d-flex justify-content-center align-items-center text-dark"><i class="bi bi-pencil-fill me-1"></i>Edit</div>
+                                            </a>
+                                            <a href="javascript:void(0);" class="btn bg-danger w-auto delete-room-btn" data-id="<?= htmlspecialchars($room['id']); ?>" data-name="<?= htmlspecialchars($room['name']); ?>">
+                                                <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Delete</div>
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             <?php endwhile; ?>
@@ -200,15 +283,7 @@ $result = $mysqli->query($sql);
                     </tbody>
                 </table>
             </div>
-
-            <?php
-            // Cleanup
-            if ($result) $result->free();
-            $mysqli->close();
-            ?>
         </div>
-
-
     </main>
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
@@ -241,10 +316,98 @@ $result = $mysqli->query($sql);
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+
     <!-- Main JS -->
     <script src="../../assets/js/main.js"></script>
 
     <script>
+        $(document).ready(function() {
+            $("#dataTables").DataTable({
+                columnDefs: [{
+                    orderable: false,
+                    targets: [0, 3]
+                }],
+            });
+        });
+
+        // Add SweetAlert2 confirmation for delete
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior
+                e.preventDefault();
+
+                // Get the user ID and username from the data attributes
+                const userId = this.dataset.id;
+                const username = this.dataset.username;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to deactivate the user: ${username}?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, deactivate it!'
+                }).then((result) => {
+                    // Step 1: Check if the admin confirmed the first dialog.
+                    if (result.isConfirmed) {
+
+                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                        Swal.fire({
+                            input: "textarea",
+                            inputLabel: "Reason for Deactivation",
+                            inputPlaceholder: "Type your reason here...",
+                            inputAttributes: {
+                                "aria-label": "Type your reason here"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Submit Deactivation',
+                            // Optional: Add validation to ensure a reason is entered
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return "You need to write a reason!";
+                                }
+                            }
+                        }).then((reasonResult) => {
+                            // Step 3: Check if the second dialog was confirmed and has a value.
+                            if (reasonResult.isConfirmed && reasonResult.value) {
+
+                                // Get the reason text from the textarea.
+                                const reason = reasonResult.value;
+
+                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                const encodedReason = encodeURIComponent(reason);
+
+                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                window.location.href = `CRUD/user_deactivate.php?id=${userId}&reason=${encodedReason}`;
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        // swal delete
+        <?php if (!empty($success_message)): ?>
+            Swal.fire({
+                title: 'Success!',
+                text: <?php echo json_encode($success_message); ?>,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        <?php endif; ?>
+        <?php if (!empty($error_message)): ?>
+            Swal.fire({
+                title: 'Error!',
+                text: <?php echo json_encode($error_message); ?>,
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        <?php endif; ?>
+
         // Get the current URL path (without the base URL)
         const currentUrl = window.location.pathname;
 
