@@ -50,14 +50,15 @@ if ($_SESSION['user_status'] == 2) {
 $result = $mysqli->query($sql);
 
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>User Management and User Levels | Al Capone</title>
-    <link rel="icon" type="image/x-icon" href="..//assets/img/Logo.webp" />
+    <title>User Management | Al Capone</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" />
@@ -143,13 +144,11 @@ $result = $mysqli->query($sql);
 </head>
 
 <body>
-
     <!-- Aside -->
     <?php include_once __DIR__ . '/../sidebar.php'; ?>
     <!-- End of Aside -->
 
-    <!-- Aside Right -->
-    <main class="col-lg-10 px-0 px-md-3" id="main">
+    <main class="col-lg-10" id="main">
         <!-- NavBar -->
         <nav class="navbar navbar-expand-lg">
             <div class="container">
@@ -157,11 +156,19 @@ $result = $mysqli->query($sql);
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h5 class="mb-0 fw-bold">User Management and User Levels</h5>
+                <h4 class="fw-semibold mb-0">User Management and User Levels</h4>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
                     <!-- Dark Mode Toggle -->
+                    <!-- <div class="form-check form-switch me-3">
+                            <input
+                                class="form-check-input fs-5"
+                                type="checkbox"
+                                id="darkModeToggle"
+                                aria-label="Toggle Dark Mode"
+                            />
+                        </div> -->
 
                     <!-- Cambiar Tema (Theme Toggle) -->
                     <div class="dropdown-center">
@@ -191,9 +198,9 @@ $result = $mysqli->query($sql);
 
                     <!-- Profile Dropdown -->
                     <div class="dropdown-center">
-                        <button class="btn btn-bd-blue d-flex align-items-center" id="profile-dropdown" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)" style="outline: none; border: none; box-shadow: none">
+                        <button class="btn btn-bd-primary dropdown-toggle d-flex align-items-center" id="profile-dropdown" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle profile options" style="outline: none; border: none; box-shadow: none">
                             <i class="bi bi-person-circle" style="font-size: 1.3em"></i>
-                            <span class="ms-2 d-none d-md-block" id="username-text"><?php echo htmlspecialchars($user['username']) ?></span>
+                            <span class="ms-2" id="username-text"><?php echo htmlspecialchars($user['username']) ?></span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                             <li>
@@ -206,7 +213,7 @@ $result = $mysqli->query($sql);
                                 </button>
                             </li>
                             <li>
-                                <a href=" ../logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                <a href=" /logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
                                     <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Logout
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -219,131 +226,126 @@ $result = $mysqli->query($sql);
                 </div>
             </div>
         </nav>
-        <!-- End NavBar -->
 
         <hr class="mt-0" />
 
-        <!-- Section Content -->
-        <section id="main-content">
-            <div class="container">
-                <!-- Heading for User Management and User Level -->
-                <div class="section-header mb-4">
-                    <a href="user-management/create.php" class="btn bg-blue w-auto">
-                        <div class="d-flex justify-content-center align-items-center"><i class="bi bi-plus me-1"></i>New User</div>
-                    </a>
-                </div>
+        <!-- End NavBar -->
 
-                <!-- Table for User Management -->
-                <div class="table-responsive">
-                    <table id="dataTables" class="table table-striped border">
-                        <thead>
-                            <tr>
-                                <th scope="col">#</th>
-                                <th scope="col">Level</th>
-                                <th scope="col">Username</th>
-                                <th scope="col">Email</th>
-                                <th scope="col">Name</th>
-                                <th scope="col">Account Status</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
+        <div class="container">
+            <!-- Heading for User Management and User Level -->
+            <div class="section-header mb-4">
+                <a href="user-management/create.php" class="btn bg-blue w-auto">
+                    <div class="d-flex justify-content-center align-items-center"><i class="bi bi-plus me-1"></i>New User</div>
+                </a>
+            </div>
 
-                            if ($result && $result->num_rows > 0) {
-                                $row_number = 1;
+            <!-- Table for User Management -->
+            <div class="table-responsive">
+                <table id="dataTables" class="table table-striped border">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Level</th>
+                            <th scope="col">Username</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">Account Status</th>
+                            <th scope="col">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
 
-                                while ($user_query = $result->fetch_assoc()) {
+                        if ($result && $result->num_rows > 0) {
+                            $row_number = 1;
 
-                            ?>
-                                    <tr>
-                                        <th scope="row"><?php echo $row_number++; ?></th>
+                            while ($user_query = $result->fetch_assoc()) {
 
-                                        <td><?php if ($user_query['status'] == 0) {
-                                                echo "admin";
-                                            } else {
-                                                echo "customer";
-                                            } ?></td>
-
-                                        <td><?php echo htmlspecialchars($user_query['username']); ?></td>
-
-                                        <td><?php echo htmlspecialchars($user_query['email']); ?></td>
-
-                                        <td><?php echo htmlspecialchars($user_query['first_name'] . ' ' . $user_query['last_name']); ?></td>
-
-                                        <td><?php if ($user_query['account_status'] == "Inactive") {
-                                                echo "Inactive";
-                                            } else {
-                                                echo "Active";
-                                            } ?></td>
-
-                                        <td>
-                                            <a href="user-management/detail.php?id=<?php echo $user_query['id']; ?>" class="btn bg-blue w-auto">
-                                                <div class="d-flex justify-content-center align-items-center"><i class="bi bi-eye-fill me-1"></i>Detail</div>
-                                            </a>
-                                            <a href="user-management/edit.php?id=<?php echo $user_query['id']; ?>" class="btn bg-warning w-auto">
-                                                <div class="d-flex justify-content-center align-items-center text-dark"><i class="bi bi-pencil-fill me-1"></i>Edit</div>
-                                            </a>
-                                            <?php if ($user_query['account_status'] == "Active") { ?>
-                                                <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn" data-id="<?php echo $user_query['id']; ?>" data-username="<?php echo htmlspecialchars($user_query['username']); ?>">
-                                                    <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Deactive</div>
-                                                </a>
-                                            <?php } else { ?>
-                                                <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn" data-id="<?php echo $user_query['id']; ?>" data-username="<?php echo htmlspecialchars($user_query['username']); ?>">
-                                                    <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Reactivate</div>
-                                                <?php } ?>
-                                        </td>
-                                    </tr>
-                                <?php
-                                }
-                            } else {
-                                ?>
+                        ?>
                                 <tr>
-                                    <td colspan-="5" class="text-center">0</td>
-                                    <td colspan-="5" class="text-center">No users found</td>
-                                    <td colspan-="5" class="text-center">No users found</td>
-                                    <td colspan-="5" class="text-center">No users found</td>
-                                    <td colspan-="5" class="text-center">No users found</td>
-                                    <td colspan-="5" class="text-center">--</td>
+                                    <th scope="row"><?php echo $row_number++; ?></th>
+
+                                    <td><?php if ($user_query['status'] == 0) {
+                                            echo "admin";
+                                        } else {
+                                            echo "customer";
+                                        } ?></td>
+
+                                    <td><?php echo htmlspecialchars($user_query['username']); ?></td>
+
+                                    <td><?php echo htmlspecialchars($user_query['email']); ?></td>
+
+                                    <td><?php echo htmlspecialchars($user_query['first_name'] . ' ' . $user_query['last_name']); ?></td>
+
+                                    <td><?php if ($user_query['account_status'] == "Inactive") {
+                                            echo "Inactive";
+                                        } else {
+                                            echo "Active";
+                                        } ?></td>
+
+                                    <td>
+                                        <a href="user-management/detail.php?id=<?php echo $user_query['id']; ?>" class="btn bg-blue w-auto">
+                                            <div class="d-flex justify-content-center align-items-center"><i class="bi bi-eye-fill me-1"></i>Detail</div>
+                                        </a>
+                                        <a href="user-management/edit.php?id=<?php echo $user_query['id']; ?>" class="btn bg-warning w-auto">
+                                            <div class="d-flex justify-content-center align-items-center text-dark"><i class="bi bi-pencil-fill me-1"></i>Edit</div>
+                                        </a>
+                                        <?php if ($user_query['account_status'] == "Active") { ?>
+                                            <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn" data-id="<?php echo $user_query['id']; ?>" data-username="<?php echo htmlspecialchars($user_query['username']); ?>">
+                                                <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Deactive</div>
+                                            </a>
+                                        <?php } else { ?>
+                                            <a href="javascript:void(0);" class="btn bg-danger w-auto delete-btn" data-id="<?php echo $user_query['id']; ?>" data-username="<?php echo htmlspecialchars($user_query['username']); ?>">
+                                                <div class="d-flex justify-content-center align-items-center text-white"><i class="bi bi-trash-fill me-1"></i>Reactivate</div>
+                                            <?php } ?>
+                                    </td>
                                 </tr>
                             <?php
                             }
-                            $result->free();
-                            $mysqli->close();
+                        } else {
                             ?>
-                        </tbody>
-                    </table>
-                </div>
+                            <tr>
+                                <td colspan-="5" class="text-center">0</td>
+                                <td colspan-="5" class="text-center">No users found</td>
+                                <td colspan-="5" class="text-center">No users found</td>
+                                <td colspan-="5" class="text-center">No users found</td>
+                                <td colspan-="5" class="text-center">No users found</td>
+                                <td colspan-="5" class="text-center">--</td>
+                            </tr>
+                        <?php
+                        }
+                        $result->free();
+                        $mysqli->close();
+                        ?>
+                    </tbody>
+                </table>
             </div>
-        </section>
-        <!-- End Main Content -->
+        </div>
     </main>
-    <!-- End Aside Right -->
 
-    <!-- Sidebar for Mobile -->
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header">
-            <a href="../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
+            <a href="../../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body mt-0">
             <ul class="list-unstyled ps-0" id="sidebar">
                 <li class="mb-2">
-                    <a href="dashboard.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
+                    <a href="dashboard.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                 </li>
                 <li class="mb-2">
-                    <a href="user-management.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                    <a href="userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                 </li>
                 <li class="mb-2">
-                    <a href="cancellation-requests.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
+                    <a href="cancellation-requests.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
                 </li>
                 <li class="mb-2">
-                    <a href="online-checkin.html" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
+                    <a href="online-checkin.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
                 </li>
             </ul>
         </div>
     </div>
-    <!-- End Sidebar for Mobile -->
+    <!-- End Main Content -->
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
