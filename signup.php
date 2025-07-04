@@ -101,7 +101,7 @@ unset($_SESSION['success_message'], $_SESSION['error_message']);
                                     </form>
                                     <p class="text-center">
                                         Already have an account?
-                                        <a href="login.html" class="text-blue">Login here</a>
+                                        <a href="login.php" class="text-blue">Login here</a>
                                     </p>
                                 </div>
                             </div>

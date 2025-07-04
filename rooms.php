@@ -34,39 +34,42 @@ $result = $mysqli->query($sql);
 
     <!-- Custom Style for Button Hover Effect -->
     <style>
-        .btn-outline-blue {
-            --bs-btn-color: #0d6efd;
-            --bs-btn-border-color: #0d6efd;
-            --bs-btn-hover-color: #fff;
-            --bs-btn-hover-bg: #0d6efd;
-            --bs-btn-hover-border-color: #0d6efd;
-            --bs-btn-focus-shadow-rgb: 13, 110, 253;
-            --bs-btn-active-color: #fff;
-            --bs-btn-active-bg: #0d6efd;
-            --bs-btn-active-border-color: #0d6efd;
-        }
-
-        .hero-section {
-            background-image: url('https://source.unsplash.com/1600x900/?hotel,resort');
-            background-size: cover;
-            background-position: center;
-            height: 75vh;
-            position: relative;
-            color: white;
-        }
-
-        .hero-overlay {
+        .overlay {
             position: absolute;
             top: 0;
             left: 0;
             height: 100%;
             width: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.6);
         }
 
-        .hero-content {
+        .hero-text {
             position: relative;
             z-index: 2;
+        }
+
+        .hero-about {
+            position: relative;
+            background-image: url('https://plus.unsplash.com/premium_photo-1687960116689-38c34910d26f?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
+            background-size: cover;
+            background-position: center;
+            height: 60vh;
+            color: white;
+            z-index: 1;
+        }
+
+        .hero-about::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            /* dark overlay */
+            z-index: 2;
+        }
+
+        .hero-about .hero-text {
+            position: relative;
+            z-index: 3;
         }
     </style>
 </head>
@@ -74,7 +77,7 @@ $result = $mysqli->query($sql);
 <body>
 
     <!-- Start Navbar -->
-    <nav class="navbar navbar-expand-lg bg-body-tertiary z-1000 fixed-top">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary z-1000 fixed-top shadow-sm">
         <div class="container">
             <!-- Logo -->
             <a class="navbar-brand fw-semibold d-flex justify-content-center align-items-center" href="index.php">
@@ -185,14 +188,12 @@ $result = $mysqli->query($sql);
     <!-- Start Main -->
     <main>
 
-
         <!-- Hero Section -->
-        <section class="hero-section d-flex align-items-center justify-content-center text-center">
-            <div class="hero-overlay"></div>
-            <div class="container hero-content">
+        <section class="hero-about d-flex align-items-center justify-content-center text-center">
+            <div class="container hero-text">
                 <h1 class="display-4 fw-bold">Explore Our Rooms</h1>
                 <p class="lead">Luxury, Comfort, and Convenience</p>
-                <a href="#room-list" class="btn btn-light btn-lg">See Available Rooms</a>
+                <a href="#rooms" class="btn btn-light btn-lg">See Available Rooms</a>
             </div>
         </section>
 
@@ -219,7 +220,7 @@ $result = $mysqli->query($sql);
                                         <p class="card-text text-primary fw-bold fs-5 mb-2">Rp <?= number_format($room['price'], 0, ',', '.'); ?> / night</p>
                                         <p class="card-text small text-muted"><?= htmlspecialchars($room['description']); ?></p>
                                     </div>
-                                    <div class="mt-auto pt-3">
+                                    <div class="mt-auto p-3">
                                         <!-- This link acts as a button and redirects to booking.php -->
                                         <!-- It passes the unique ID of the room in the URL -->
                                         <a href="booking.php?room_id=<?= htmlspecialchars($room['id']); ?>" class="btn btn-outline-blue w-100 fw-semibold">
@@ -243,31 +244,53 @@ $result = $mysqli->query($sql);
         </section>
 
         <!-- Facilities Section -->
-        <section class="py-5 bg-white">
+        <section class="py-5 bg-light">
             <div class="container text-center">
                 <h2 class="fw-bold mb-4">Facilities</h2>
                 <div class="row g-4">
-                    <div class="col-md-3"><i class="bi bi-wifi fs-2 text-primary"></i>
+                    <div class="col-md-3">
+                        <i class="bi bi-wifi fs-2 text-primary"></i>
                         <p>Free Wi-Fi</p>
                     </div>
-                    <div class="col-md-3"><i class="bi bi-cup-hot fs-2 text-primary"></i>
+                    <div class="col-md-3">
+                        <i class="bi bi-cup-hot fs-2 text-primary"></i>
                         <p>Restaurant</p>
                     </div>
-                    <div class="col-md-3"><i class="bi bi-spa fs-2 text-primary"></i>
+                    <div class="col-md-3">
+                        <i class="bi bi-flower1 fs-2 text-primary"></i>
                         <p>Spa & Wellness</p>
                     </div>
-                    <div class="col-md-3"><i class="bi bi-car-front fs-2 text-primary"></i>
+                    <div class="col-md-3">
+                        <i class="bi bi-car-front fs-2 text-primary"></i>
                         <p>Free Parking</p>
                     </div>
                 </div>
+
             </div>
         </section>
     </main>
     <!-- End Main -->
 
-    <footer class="py-4 mt-auto">
-        <div class="container text-center">
-            <p class="text-muted mb-0">&copy; <?= date('Y'); ?> Al Capone Hotel. All Rights Reserved.</p>
+    <!-- Footer -->
+    <footer class="bg-body-tertiary py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6 mb-3 mb-md-0">
+                    <h5>Al Capone Resort</h5>
+                    <p class="mb-0">Jl. Tropis Indah No.123, Bali, Indonesia</p>
+                    <p class="mb-0">Email: contact@alcaponeresort.com</p>
+                    <p>Phone: +62 812-3456-7890</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <h6>Quick Links</h6>
+                    <a href="index.html" class="text-decoration-none">Home</a> |
+                    <a href="rooms.php" class="text-decoration-none">Rooms</a> |
+                    <a href="gallery.php" class="text-decoration-none">Gallery</a> |
+                    <a href="faq.php" class="text-decoration-none">FAQ</a>
+                </div>
+            </div>
+            <hr class="my-4 border-light" />
+            <p class="text-center mb-0">© <?= date('Y') ?> Al Capone Resort. All rights reserved.</p>
         </div>
     </footer>
 
