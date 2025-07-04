@@ -279,6 +279,12 @@ $user_view = $result->fetch_assoc();
                                 <input type="email" class="form-control" name="email" value="<?= $user_view['email']; ?>">
                             </div>
                         </div>
+                        <div class="col-md-12">
+                                <div class="mb-3">
+                            <label class="form-label">Reason to Edit: <span class="text-danger">*</span></label>
+                                    <input type="textarea" class="form-control" name="reason" required>
+                                </div>
+                            </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Created at</label>
@@ -405,7 +411,39 @@ $user_view = $result->fetch_assoc();
                 }).then((result) => {
                     // If the admin confirms, navigate to the reset password link
                     if (result.isConfirmed) {
-                        window.location.href = href;
+                        if (result.isConfirmed) {
+
+                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                        Swal.fire({
+                            input: "textarea",
+                            inputLabel: "Reason for resetting password",
+                            inputPlaceholder: "Type your reason here...",
+                            inputAttributes: {
+                                "aria-label": "Type your reason here"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Submit Reset Password',
+                            // Optional: Add validation to ensure a reason is entered
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return "You need to write a reason!";
+                                }
+                            }
+                        }).then((reasonResult) => {
+                            // Step 3: Check if the second dialog was confirmed and has a value.
+                            if (reasonResult.isConfirmed && reasonResult.value) {
+
+                                // Get the reason text from the textarea.
+                                const reason = reasonResult.value;
+
+                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                const encodedReason = encodeURIComponent(reason);
+
+                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                window.location.href = `../CRUD/user_reset.php?id=${userId}&reason=${encodedReason}`;
+                            }
+                        });
+                    }
                     }
                 });
             });

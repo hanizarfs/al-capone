@@ -22,6 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit'])) {
     $username = trim($_POST['username']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
+    $reason = trim($_POST['reason']);
 
     // --- 2. Correct "Already Exists" Check ---
     // Check if the new username/email is already taken by ANOTHER user.
@@ -53,9 +54,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['edit'])) {
 
         // Log the action
         $action_taken = "Edited User Profile";
-        $admin_username = $_SESSION['username'];
-        $log_stmt = $mysqli->prepare("INSERT INTO user_logs(admin_uname, action, affected_user) VALUES (?, ?, ?)");
-        $log_stmt->bind_param("sss", $admin_username, $action_taken, $email);
+        $admin_id = $_SESSION['user_id'];
+        $log_stmt = $mysqli->prepare("INSERT INTO user_logs(admin_id, action, affected_user, reason) VALUES (?, ?, ?, ?)");
+        $log_stmt->bind_param("isis", $admin_id, $action_taken, $user_id_to_edit, $reason);
         $log_stmt->execute();
         $log_stmt->close();
 

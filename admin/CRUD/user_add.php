@@ -24,6 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
     $phone = trim($_POST['phone']);
     $password_hash = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $status = trim($_POST['status']);
+    $reason = trim($_POST['reason']);
 
     // Check if username or email already exists using a prepared statement
     $check_stmt = $mysqli->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
@@ -42,10 +43,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
         if ($insert_stmt->execute()) {
             $_SESSION['success_message'] = 'User added Successfully!';
 
+            $get_stmt = $mysqli->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
+            $get_stmt->bind_param("ss", $username, $email);
+            $get_stmt->execute();
+            $result = $get_stmt->get_result();
+            $user = $result->fetch_assoc();
+            
             $action_taken = "Added User";
-            $admin_username = $_SESSION['username'];
-            $log_stmt = $mysqli->prepare("INSERT INTO user_logs(admin_uname, action, affected_user) VALUES (?, ?, ?)");
-            $log_stmt->bind_param("sss", $admin_username, $action_taken, $email);
+            $admin_id = $_SESSION['user_id'];
+            $log_stmt = $mysqli->prepare("INSERT INTO user_logs(admin_id, action, affected_user, reason) VALUES (?, ?, ?, ?)");
+            $log_stmt->bind_param("isis", $admin_id, $action_taken, $user['id'], $reason);
             $log_stmt->execute();
             $log_stmt->close();
 
@@ -65,4 +72,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
     $mysqli->close();
     exit();
 }
-?>

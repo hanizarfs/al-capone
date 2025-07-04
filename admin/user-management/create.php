@@ -52,72 +52,72 @@ if (!$user) {
 
     <!-- Style -->
     <style>
-    body {
-        height: 100%;
-    }
-
-    aside {
-        /* border: 1px yellow solid; */
-        position: fixed;
-        overflow: auto;
-        height: calc(100vh - 12px);
-        justify-content: flex-start;
-        align-self: flex-start;
-    }
-
-    nav {
-        position: sticky;
-    }
-
-    main {
-        position: relative;
-        overflow: visible;
-        margin-left: auto;
-        justify-content: flex-end;
-        align-self: flex-end;
-    }
-
-    #sidebarshow {
-        display: none;
-    }
-
-    .b-example-divider {
-        width: 100%;
-        height: 3rem;
-        background-color: rgba(0, 0, 0, 0.1);
-        border: solid rgba(0, 0, 0, 0.15);
-        border-width: 1px 0;
-        box-shadow: inset 0 0.5em 1.5em rgba(0, 0, 0, 0.1), inset 0 0.125em 0.5em rgba(0, 0, 0, 0.15);
-    }
-
-    .b-example-vr {
-        flex-shrink: 0;
-        width: 1.5em;
-        height: 100vh;
-    }
-
-    .bi {
-        vertical-align: -0.125em;
-        fill: currentColor;
-    }
-
-    @media screen and (max-width: 992px) {
-        #sidebarshow {
-            display: inline;
+        body {
+            height: 100%;
         }
 
-        #sidebartoggle {
+        aside {
+            /* border: 1px yellow solid; */
+            position: fixed;
+            overflow: auto;
+            height: calc(100vh - 12px);
+            justify-content: flex-start;
+            align-self: flex-start;
+        }
+
+        nav {
+            position: sticky;
+        }
+
+        main {
+            position: relative;
+            overflow: visible;
+            margin-left: auto;
+            justify-content: flex-end;
+            align-self: flex-end;
+        }
+
+        #sidebarshow {
             display: none;
         }
-    }
 
-    #sidebar button:hover {
-        background: darkblue;
-    }
+        .b-example-divider {
+            width: 100%;
+            height: 3rem;
+            background-color: rgba(0, 0, 0, 0.1);
+            border: solid rgba(0, 0, 0, 0.15);
+            border-width: 1px 0;
+            box-shadow: inset 0 0.5em 1.5em rgba(0, 0, 0, 0.1), inset 0 0.125em 0.5em rgba(0, 0, 0, 0.15);
+        }
 
-    .dataTables_length {
-        margin-bottom: 12px !important;
-    }
+        .b-example-vr {
+            flex-shrink: 0;
+            width: 1.5em;
+            height: 100vh;
+        }
+
+        .bi {
+            vertical-align: -0.125em;
+            fill: currentColor;
+        }
+
+        @media screen and (max-width: 992px) {
+            #sidebarshow {
+                display: inline;
+            }
+
+            #sidebartoggle {
+                display: none;
+            }
+        }
+
+        #sidebar button:hover {
+            background: darkblue;
+        }
+
+        .dataTables_length {
+            margin-bottom: 12px !important;
+        }
     </style>
 </head>
 
@@ -311,19 +311,24 @@ if (!$user) {
                     </div>
 
                     <!-- Role Selection (Admin or User) -->
-                    <?php if($user['status'] == 2){ ?>
-                    <div class="mb-3">
-                        <label class="form-label">Role <span class="text-danger">*</span></label>
-                        <select class="form-select" required name="status">
-                            <option value="" disabled selected>Select Role</option>
-                            <option value="0">Admin</option>
-                            <option value="1">User</option>
-                        </select>
-                        <?php }else{?>
+                    <?php if ($user['status'] == 2) { ?>
+                        <div class="mb-3">
+                            <label class="form-label">Role <span class="text-danger">*</span></label>
+                            <select class="form-select" required name="status">
+                                <option value="" disabled selected>Select Role</option>
+                                <option value="0">Admin</option>
+                                <option value="1">User</option>
+                            </select>
+                        <?php } else { ?>
                             <input type="number" hidden name="status" value="1">
-                        <?php }?>
-                        <button type="submit" class="btn bg-blue w-auto" id="register-btn" name="register">Add
-                            User</button>
+                        <?php } ?>
+
+                        <div class="mb-3">
+                            <label class="form-label">Reason to add: <span class="text-danger">*</span></label>
+                            <input type="textarea" class="form-control" required name="reason">
+                        </div>
+
+                        <button type="submit" class="btn bg-blue w-auto" id="register-btn" name="register">Add User</button>
                 </form>
             </div>
         </section>
@@ -380,49 +385,49 @@ if (!$user) {
     <script src="../../assets/js/main.js"></script>
 
     <script>
-    $(document).ready(function() {
-        $("#dataTables").DataTable({
-            columnDefs: [{
-                orderable: false,
-                targets: [0, 3]
-            }],
+        $(document).ready(function() {
+            $("#dataTables").DataTable({
+                columnDefs: [{
+                    orderable: false,
+                    targets: [0, 3]
+                }],
+            });
         });
-    });
     </script>
 
     <script>
-    // Get the current URL path (without the base URL)
-    const currentUrl = window.location.pathname;
+        // Get the current URL path (without the base URL)
+        const currentUrl = window.location.pathname;
 
-    // Select all the sidebar links
-    const sidebarLinks = document.querySelectorAll("#sidebar a");
+        // Select all the sidebar links
+        const sidebarLinks = document.querySelectorAll("#sidebar a");
 
-    // Loop through the sidebar links to check if the current URL matches
-    sidebarLinks.forEach((link) => {
-        // Get the href of the link (relative URL)
-        const linkHref = link.getAttribute("href");
+        // Loop through the sidebar links to check if the current URL matches
+        sidebarLinks.forEach((link) => {
+            // Get the href of the link (relative URL)
+            const linkHref = link.getAttribute("href");
 
-        // Check if the current URL path contains part of the link's href (e.g., 'user-management')
-        if (currentUrl.includes(linkHref.split("/").pop())) {
-            // Add the 'bg-blue' class to the active link
-            link.classList.add("bg-blue");
-        }
-    });
+            // Check if the current URL path contains part of the link's href (e.g., 'user-management')
+            if (currentUrl.includes(linkHref.split("/").pop())) {
+                // Add the 'bg-blue' class to the active link
+                link.classList.add("bg-blue");
+            }
+        });
 
-    document.getElementById("addUserForm").addEventListener("submit", function(e) {
-        const password = document.getElementById("password").value;
-        const confirmPassword = document.getElementById("password-confirm").value;
+        document.getElementById("addUserForm").addEventListener("submit", function(e) {
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("password-confirm").value;
 
-        if (password !== confirmPassword) {
-            e.preventDefault();
-            Swal.fire({
-                title: 'Error!',
-                text: 'Passwords do not match!',
-                icon: 'error'
-            });
-            return false;
-        }
-    });
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Passwords do not match!',
+                    icon: 'error'
+                });
+                return false;
+            }
+        });
     </script>
 </body>
 

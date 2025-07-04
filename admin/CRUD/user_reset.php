@@ -23,6 +23,7 @@ include_once("../../config.php");
 
 $user_id_to_reset = $_GET['id'];
 $default_password = "123"; // The new default password
+$reason = $_GET['reason'];
 
 // --- 2. FETCH THE AFFECTED USER'S EMAIL FOR LOGGING ---
 // We must do this BEFORE we change anything.
@@ -57,11 +58,11 @@ if ($update_stmt->execute()) {
 
     // --- 4. LOG THE ACTION ---
     $action_taken = "Reset User Password";
-    $admin_username = $_SESSION['username']; // Get admin username from session
+    $admin_id = $_SESSION['user_id']; // Get admin username from session
 
-    $log_stmt = $mysqli->prepare("INSERT INTO user_logs(admin_uname, action, affected_user) VALUES (?, ?, ?)");
+    $log_stmt = $mysqli->prepare("INSERT INTO user_logs(admin_id, action, affected_user, reason) VALUES (?, ?, ?, ?)");
     // Use the $affected_user_email variable we fetched earlier
-    $log_stmt->bind_param("sss", $admin_username, $action_taken, $affected_user_email);
+    $log_stmt->bind_param("isis", $admin_id, $action_taken, $user_id_to_reset, $reason);
     $log_stmt->execute();
     $log_stmt->close();
 
