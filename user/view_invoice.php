@@ -93,38 +93,21 @@ $mysqli->close();
 </head>
 
 <body>
-    <!-- Start Navbar -->
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container">
-            <a class="navbar-brand fw-semibold d-flex justify-content-center align-items-center" href="index.php">
-                <img src="./assets/img/Logo.webp" alt="Logo" width="30" height="30" />
-                <span class="ms-2"> Al Capone </span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link" href="about.php">About</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="rooms.php">Rooms</a></li>
-                    <li class="nav-item"><a class="nav-link" href="gallery.php">Gallery</a></li>
-                    <li class="nav-item"><a class="nav-link" href="faq.php">FAQ</a></li>
-                </ul>
-                <div class="d-flex justify-content-center align-items-center">
-                    <a href="login.php" class="btn bg-blue"> Login </a>
-                </div>
-            </div>
-        </div>
-    </nav>
-    <!-- End Navbar -->
 
     <!-- Start Main Invoice Section -->
     <main>
+
         <section id="invoice" class="py-5 bg-light">
             <div class="container">
+
                 <div class="row justify-content-center">
                     <div class="col-lg-8">
+                        <a
+                            href="dashboard.php"
+                            class="btn btn-outline-secondary mb-3">
+                            <i class="bi bi-arrow-left"></i>
+                            Go Back
+                        </a>
                         <div class="card shadow-sm border-0">
                             <div class="card-header bg-dark text-white">
                                 <h2 class="mb-0">Invoice</h2>

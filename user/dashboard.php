@@ -157,6 +157,14 @@ $query_stmt->close();
         <!-- End NavBar -->
 
         <div class="container">
+            <div class="d-flex flex-end justify-content-end align-items-center">
+                <a
+                    href="../index.php"
+                    class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left"></i>
+                    Go Home
+                </a>
+            </div>
             <p>Active Booking</p>
             <table id="dataTables" class="table table-striped border">
                 <thead>

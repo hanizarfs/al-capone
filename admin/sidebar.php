@@ -55,13 +55,6 @@ function isActiveMulti($filenames, $folder)
         </li>
 
         <li class="mb-2">
-            <a href="<?= $baseUrl ?>/admin/online-checkin.php"
-                class="btn btn-toggle d-inline-flex align-items-center rounded border-0 w-100 <?= isActive('online-checkin.php') ?>">
-                <i class="bi bi-check-circle-fill me-2"></i> Online Check-in
-            </a>
-        </li>
-
-        <li class="mb-2">
             <a href="<?= $baseUrl ?>/admin/manage-rooms/index.php"
                 class="btn btn-toggle d-inline-flex align-items-center rounded border-0 w-100 <?= isActiveMulti(['index.php', 'create.php', 'edit.php', 'detail.php'], 'manage-rooms') ?>">
                 <i class="bi bi-building-fill me-2"></i> Manage Rooms
