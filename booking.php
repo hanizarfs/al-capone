@@ -105,7 +105,7 @@ $mysqli->close();
                         <!-- Room Details -->
                         <div class="room-details mb-4">
                             <h3 class="text-primary"><?= htmlspecialchars($room['name']); ?></h3>
-                            <img src="https://placehold.co/1200x600/EEE/31343C?text=<?= urlencode($room['name']); ?>" class="img-fluid rounded mb-3" alt="<?= htmlspecialchars($room['name']); ?>">
+                            <img src="assets/img/ <?= urlencode($room['id']); ?>.png" class="img-fluid rounded mb-3" alt="<?= htmlspecialchars($room['name']); ?>">
                             <p class="text-muted"><?= htmlspecialchars($room['description']); ?></p>
                         </div>
                         <hr>

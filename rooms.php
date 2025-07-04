@@ -212,12 +212,19 @@ $result = $mysqli->query($sql);
                             <div class="col-lg-3 col-md-6 mb-4 d-flex align-items-stretch">
                                 <div class="card h-100 w-100 shadow-sm border-0">
                                     <!-- In a real app, you'd have an image column in your DB. For now, we use a placeholder. -->
-                                    <img src="https://placehold.co/600x400/EEE/31343C?text=<?= urlencode($room['name']); ?>" class="card-img-top fixed-image" alt="<?= htmlspecialchars($room['name']); ?>">
+                                    <img src="assets/img/<?= urlencode($room['id']); ?>.png" class="card-img-top fixed-image" alt="<?= htmlspecialchars($room['name']); ?>">
 
                                     <div class="card-body d-flex flex-column">
                                         <h5 class="card-title fw-bold"><?= htmlspecialchars($room['name']); ?></h5>
                                         <p class="card-text text-primary fw-bold fs-5 mb-2">Rp <?= number_format($room['price'], 0, ',', '.'); ?> / night</p>
                                         <p class="card-text small text-muted"><?= htmlspecialchars($room['description']); ?></p>
+                                    </div>
+                                    <div class="mt-auto pt-3">
+                                        <!-- This link acts as a button and redirects to booking.php -->
+                                        <!-- It passes the unique ID of the room in the URL -->
+                                        <a href="booking.php?room_id=<?= htmlspecialchars($room['id']); ?>" class="btn btn-outline-blue w-100 fw-semibold">
+                                            Order Now
+                                        </a>
                                     </div>
                                 </div>
                             </div>
