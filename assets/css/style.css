@@ -29,6 +29,10 @@ html[data-bs-theme="dark"] {
         background: #111111;
     }
 
+    .bg-light {
+        background: #0c0c0c !important;
+    }
+
 
 }
 
