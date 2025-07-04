@@ -42,8 +42,19 @@ if (!$user) {
 }
 
 // Query ambil semua data dari tabel rooms
-$sql = "SELECT id, name, price, description, created_at FROM rooms ORDER BY created_at DESC";
-$result = $mysqli->query($sql);
+$sql = "SELECT bc.booking_id, u.username, bc.reason, bc.status , r.name, b.checkin_date, b.checkout_date, bc.requested_at, b.invoice_id, b.payment_method, b.booking_timestamp, bc.id
+FROM booking_cancellations as bc
+LEFT JOIN users AS u on bc.user_id = u.id
+LEFT JOIN bookings AS b on bc.booking_id = b.id
+LEFT JOIN rooms AS r on b.room_type = r.id
+
+ORDER BY bc.id DESC";
+
+$stmt = $mysqli->prepare($sql);
+$stmt->execute();
+$booking_cancellations = $stmt->get_result();
+
+$stmt->close();
 
 ?>
 
@@ -235,7 +246,7 @@ $result = $mysqli->query($sql);
                     <thead>
                         <tr>
                             <th scope="col">#</th>
-                            <th scope="col">User Name</th>
+                            <th scope="col">Usename</th>
                             <th scope="col">Reservation</th>
                             <th scope="col">Reason</th>
                             <th scope="col">Requested Date</th>
@@ -244,6 +255,66 @@ $result = $mysqli->query($sql);
                         </tr>
                     </thead>
                     <tbody>
+                        <?php
+
+                        if ($booking_cancellations && $booking_cancellations->num_rows > 0) {
+                            $row_number = 1;
+
+                            while ($booking_query = $booking_cancellations->fetch_assoc()) {
+
+                        ?>
+                                <tr>
+                                    <th scope="row"><?php echo $row_number++; ?></th>
+
+                                    <td><?php echo htmlspecialchars($booking_query['username']); ?></td>
+
+                                    <td> <button class="btn bg-blue info-btn"
+                                            data-invoice-id="<?= htmlspecialchars($booking_query['invoice_id']) ?>"
+                                            data-room-type="<?= htmlspecialchars($booking_query['name']) ?>"
+                                            data-checkin="<?= htmlspecialchars($booking_query['checkin_date']) ?>"
+                                            data-checkout="<?= htmlspecialchars($booking_query['checkout_date']) ?>"
+                                            data-payment-method="<?= htmlspecialchars($booking_query['payment_method']) ?>"
+                                            data-timestamp="<?= htmlspecialchars($booking_query['booking_timestamp']) ?>">
+                                            Show Info
+                                        </button></td>
+
+                                    <td><?php echo htmlspecialchars($booking_query['reason']); ?></td>
+
+                                    <td><?php echo htmlspecialchars($booking_query['requested_at']); ?></td>
+
+                                    <?php if ($booking_query['status'] == "Appealed") { ?>
+                                        <td><span class="badge bg-warning">Pending</span></td>
+                                        <td>
+                                            <button class="btn btn-success approve-btn" href="javascript:void(0);" data-id="<?= $booking_query['booking_id'] ?>" data-appeal="<?= $booking_query['id']?>">Approve</button>
+                                            <button class="btn btn-danger reject-btn" href="javascript:void(0);" data-id="<?= $booking_query['booking_id'] ?>" data-appeal ="<?= $booking_query['id']?>">Reject</button>
+                                        </td>
+                                    <?php } elseif ($booking_query['status'] == "Rejected") { ?>
+                                        <td><span class="badge bg-danger">Rejected</span></td>
+                                        <td><button class="btn btn-danger why-btn" href="javascript:void(0);" data-id="<?= $booking_query['id'] ?>">">why?</button></td>
+                                    <?php } else { ?>
+                                        <td><span class="badge bg-success">Approve</span></td>
+                                        <td><button class="btn btn-success why-btn" href="javascript:void(0);" data-id="<?= $booking_query['id'] ?>">">Why?</button></td>
+                                    <?php } ?>
+                                </tr>
+                            <?php
+                            }
+                        } else {
+                            ?>
+                            <tr>
+                                <td colspan-="5" class="text-center">0</td>
+                                <td colspan-="5" class="text-center">Nothing found</td>
+                                <td colspan-="5" class="text-center">Nothing found</td>
+                                <td colspan-="5" class="text-center">Nothing found</td>
+                                <td colspan-="5" class="text-center">Nothing found</td>
+                                <td colspan-="5" class="text-center">Nothing found</td>
+                                <td colspan-="5" class="text-center">--</td>
+                            </tr>
+                        <?php
+                        }
+                        $booking_cancellations->free();
+                        $mysqli->close();
+                        ?>
+
                         <tr>
                             <th scope="row">1</th>
                             <td>Mark</td>
@@ -332,24 +403,69 @@ $result = $mysqli->query($sql);
             });
         });
 
+
+        // Select all buttons with the class '.info-btn'
+        const infoButtons = document.querySelectorAll('.info-btn');
+
+        // Loop through each button and add a click listener
+        infoButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+
+                // Get ALL data from the clicked button's 'dataset'
+                const invoiceId = this.dataset.invoiceId;
+                const roomType = this.dataset.roomType;
+                const checkin = this.dataset.checkin;
+                const checkout = this.dataset.checkout;
+                const paymentMethod = this.dataset.paymentMethod;
+                const timestamp = this.dataset.timestamp;
+
+                // Optional: Format the timestamp for better readability
+                const formattedTimestamp = new Date(timestamp).toLocaleString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                // Display the data in the SweetAlert pop-up
+                Swal.fire({
+                    title: "<strong>Booking Information</strong>",
+                    icon: 'info',
+                    html: `
+                <div style="text-align: left; padding: 0 1rem;">
+                    <b>Invoice ID:</b> ${invoiceId}<br>
+                    <b>Room Type:</b> ${roomType}<br>
+                    <b>Check-in:</b> ${checkin}<br>
+                    <b>Check-out:</b> ${checkout}<br>
+                    <b>Payment:</b> ${paymentMethod}<br>
+                    <b>Booked On:</b> ${formattedTimestamp}
+                </div>
+            `,
+                    confirmButtonText: 'Close'
+                });
+            });
+        });
+
+
         // Add SweetAlert2 confirmation for delete
-        const deleteButtons = document.querySelectorAll('.delete-btn');
-        deleteButtons.forEach(button => {
+        const approveButton = document.querySelectorAll('.approve-btn');
+        approveButton.forEach(button => {
             button.addEventListener('click', function(e) {
                 // Prevent the default link behavior
                 e.preventDefault();
 
                 // Get the user ID and username from the data attributes
-                const userId = this.dataset.id;
-                const username = this.dataset.username;
+                const bookingId = this.dataset.id;
+                const appealId = this.dataset.appeal;
                 Swal.fire({
                     title: 'Are you sure?',
-                    text: `You are about to deactivate the user: ${username}?`,
+                    text: `You are about to approve this appeal`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#3085d6',
                     cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, deactivate it!'
+                    confirmButtonText: 'Yes, please'
                 }).then((result) => {
                     // Step 1: Check if the admin confirmed the first dialog.
                     if (result.isConfirmed) {
@@ -357,13 +473,13 @@ $result = $mysqli->query($sql);
                         // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
                         Swal.fire({
                             input: "textarea",
-                            inputLabel: "Reason for Deactivation",
+                            inputLabel: "Reason for Approving",
                             inputPlaceholder: "Type your reason here...",
                             inputAttributes: {
                                 "aria-label": "Type your reason here"
                             },
                             showCancelButton: true,
-                            confirmButtonText: 'Submit Deactivation',
+                            confirmButtonText: 'Approve appeal',
                             // Optional: Add validation to ensure a reason is entered
                             inputValidator: (value) => {
                                 if (!value) {
@@ -381,7 +497,63 @@ $result = $mysqli->query($sql);
                                 const encodedReason = encodeURIComponent(reason);
 
                                 // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
-                                window.location.href = `CRUD/user_deactivate.php?id=${userId}&reason=${encodedReason}`;
+                                window.location.href = `../CRUD/appeal_process.php?id=${bookingId}&reason=${encodedReason}& type=approved&appealId=${appealId}`;
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        const rejectButton = document.querySelectorAll('.reject-btn');
+        rejectButton.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior
+                e.preventDefault();
+
+                // Get the user ID and username from the data attributes
+                const bookingId = this.dataset.id;
+                const appealId = this.dataset.appeal;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to reject this appeal`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, please'
+                }).then((result) => {
+                    // Step 1: Check if the admin confirmed the first dialog.
+                    if (result.isConfirmed) {
+
+                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                        Swal.fire({
+                            input: "textarea",
+                            inputLabel: "Reason for Rejecting",
+                            inputPlaceholder: "Type your reason here...",
+                            inputAttributes: {
+                                "aria-label": "Type your reason here"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Reject appeal',
+                            // Optional: Add validation to ensure a reason is entered
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return "You need to write a reason!";
+                                }
+                            }
+                        }).then((reasonResult) => {
+                            // Step 3: Check if the second dialog was confirmed and has a value.
+                            if (reasonResult.isConfirmed && reasonResult.value) {
+
+                                // Get the reason text from the textarea.
+                                const reason = reasonResult.value;
+
+                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                const encodedReason = encodeURIComponent(reason);
+
+                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                window.location.href = `../CRUD/appeal_process.php?id=${bookingId}&reason=${encodedReason}&type=rejected&appealId=${appealId}`;
                             }
                         });
                     }
