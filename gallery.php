@@ -211,7 +211,7 @@ $result = $mysqli->query($sql);
             </div>
         </section>
 
-        <section id="gallery" class="py-5 bg-light">
+        <section id="gallery" class="py-5">
             <div class="container">
                 <div class="row g-3">
                     <div class="col-6 col-md-4">

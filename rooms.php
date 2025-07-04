@@ -244,7 +244,7 @@ $result = $mysqli->query($sql);
         </section>
 
         <!-- Facilities Section -->
-        <section class="py-5 bg-light">
+        <section class="py-5">
             <div class="container text-center">
                 <h2 class="fw-bold mb-4">Facilities</h2>
                 <div class="row g-4">
