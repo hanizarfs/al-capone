@@ -288,13 +288,24 @@ $stmt->close();
                                             <button class="btn btn-success approve-btn" href="javascript:void(0);" data-id="<?= $booking_query['booking_id'] ?>" data-appeal="<?= $booking_query['id']?>">Approve</button>
                                             <button class="btn btn-danger reject-btn" href="javascript:void(0);" data-id="<?= $booking_query['booking_id'] ?>" data-appeal ="<?= $booking_query['id']?>">Reject</button>
                                         </td>
-                                    <?php } elseif ($booking_query['status'] == "Rejected") { ?>
+                                    <?php } else{
+
+                                        $sql = "SELECT cl.reason FROM cancellation_logs AS cl LEFT JOIN booking_cancellations AS bc on cl.cancel_id  = bc.id WHERE bc.id = ?";
+                                        
+                                        $why_stmt = $mysqli->prepare($sql);
+                                        $why_stmt->bind_param("i", $booking_query['id']);
+                                        $why_stmt->execute();
+                                        $result = $why_stmt->get_result();
+                                        $reason_why = $result->fetch_assoc();
+                                        $why_stmt->close();
+
+                                        if ($booking_query['status'] == "Rejected") { ?>
                                         <td><span class="badge bg-danger">Rejected</span></td>
-                                        <td><button class="btn btn-danger why-btn" href="javascript:void(0);" data-id="<?= $booking_query['id'] ?>">">why?</button></td>
+                                        <td><button class="btn btn-danger why-btn" href="javascript:void(0);" data-reason="<?= $reason_why['reason'] ?>">why?</button></td>
                                     <?php } else { ?>
                                         <td><span class="badge bg-success">Approve</span></td>
-                                        <td><button class="btn btn-success why-btn" href="javascript:void(0);" data-id="<?= $booking_query['id'] ?>">">Why?</button></td>
-                                    <?php } ?>
+                                        <td><button class="btn btn-success why-btn" href="javascript:void(0);" data-reason="<?= $reason_why['reason'] ?>">Why?</button></td>
+                                    <?php }}?>
                                 </tr>
                             <?php
                             }
@@ -315,46 +326,7 @@ $stmt->close();
                         $mysqli->close();
                         ?>
 
-                        <tr>
-                            <th scope="row">1</th>
-                            <td>Mark</td>
-                            <td>Villa Sunset</td>
-                            <td>Change of plans</td>
-                            <td>2023-06-01</td>
-                            <td><span class="badge bg-warning">Pending</span></td>
-                            <td>
-                                <button class="btn btn-success approve-btn">Approve</button>
-                                <button class="btn btn-danger reject-btn">Reject</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">2</th>
-                            <td>Jacob</td>
-                            <td>Villa Oasis</td>
-                            <td>Family emergency</td>
-                            <td>2023-06-02</td>
-                            <td><span class="badge bg-warning">Pending</span></td>
-                            <td>
-                                <button class="btn btn-success approve-btn">Approve</button>
-                                <button class="btn btn-danger reject-btn">Reject</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">3</th>
-                            <td>John</td>
-                            <td>Villa Dream</td>
-                            <td>Weather issues</td>
-                            <td>2023-06-03</td>
-                            <td><span class="badge bg-success">Approved</span></td>
-                            <td>
-                                <button class="btn btn-secondary" disabled>Approved</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
+                    
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header">
@@ -557,6 +529,26 @@ $stmt->close();
                             }
                         });
                     }
+                });
+            });
+        });
+
+        const whyButton = document.querySelectorAll('.why-btn');
+
+        // Loop through the correct variable 'appealButtons'
+        whyButton.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior if it's an <a> tag
+                e.preventDefault();
+
+                // Get the reason from the data-appeal attribute
+                const reason = this.dataset.reason;
+
+                Swal.fire({
+                    title: "Admin Consideration:",
+                    // Use backticks (`) instead of single quotes (') to correctly display the variable
+                    html: `<pre style="white-space: pre-wrap; text-align: left; margin-left: 1rem;">${reason}</pre>`,
+                    confirmButtonText: 'Close'
                 });
             });
         });

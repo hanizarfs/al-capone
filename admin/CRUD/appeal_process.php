@@ -11,7 +11,7 @@ require_once('../../config.php');
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     $_SESSION['error_message'] = "Invalid request: No booking ID specified.";
-    header('Location: ../cancellation-request/index.php');
+    header('Location: ../cancellation-requests/index.php');
     exit;
 }
 
@@ -46,8 +46,8 @@ if ($stmt->execute()) {
         }
         $admin_id = $_SESSION['user_id'];
 
-        $log_stmt = $mysqli->prepare("INSERT INTO cancellation_logs(admin_id, action, affected_booking, reason) VALUES (?, ?, ?, ?)");
-        $log_stmt->bind_param("isis", $admin_id, $action_taken, $booking_id_to_processed, $reason);
+        $log_stmt = $mysqli->prepare("INSERT INTO cancellation_logs(admin_id, action, affected_booking, reason, cancel_id) VALUES (?, ?, ?, ?, ?)");
+        $log_stmt->bind_param("isisi", $admin_id, $action_taken, $booking_id_to_processed, $reason, $appeal_id_to_processed);
         $log_stmt->execute();
         $log_stmt->close();
         $_SESSION['success_message'] = "Bookings Process has been successfully done.";
