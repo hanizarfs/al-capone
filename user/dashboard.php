@@ -205,9 +205,16 @@ $query2_stmt->close();
                                     <a href="view_invoice.php?id=<?= $booking_query['id'] ?>" class="btn btn-primary btn-sm invoice-btn">
                                         <i class="bi bi-eye-fill"></i> Show Invoice
                                     </a>
-                                    <a href="manage-rooms/edit.php?id=" class="btn btn-warning btn-sm text-dark checkin-btn">
-                                        <i class="bi bi-pencil-fill"></i> Online Check-In
-                                    </a>
+                                    <?php if ($booking_query['status'] = 'Active') { ?>
+                                        <a href="javascript:void(0);" data-id="<?= htmlspecialchars($booking_query['id']); ?>" data-type="checkin" class="btn btn-warning btn-sm text-dark checkin-btn">
+                                            <i class="bi bi-pencil-fill"></i> Online Check-In
+                                        </a>
+                                    <?php } else { ?>
+                                        <a href="javascript:void(0);" data-id="<?= htmlspecialchars($booking_query['id']); ?>" data-type="cbeckout" class="btn btn-warning btn-sm text-dark checkin-btn">
+                                            <i class="bi bi-pencil-fill"></i> Online Check-Out
+                                        </a>
+                                    <?php } ?>
+
                                     <?php if ($booking_query['appeal_reason'] == null) { ?>
                                         <a href="javascript:void(0);" class="btn btn-danger btn-sm cancel-room-btn" data-id="<?= htmlspecialchars($booking_query['id']); ?>">
                                             <i class="bi bi-trash-fill"></i> Appeal Cancel
@@ -348,6 +355,61 @@ $query2_stmt->close();
                 confirmButtonText: 'Try Again'
             });
         <?php endif; ?>
+
+        const cancelButton = document.querySelectorAll('.cancel-room-btn');
+        cancelButton.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior
+                e.preventDefault();
+
+                // Get the user ID and username from the data attributes
+                const bookingId = this.dataset.id;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to cancel this booking?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, please'
+                }).then((result) => {
+                    // Step 1: Check if the admin confirmed the first dialog.
+                    if (result.isConfirmed) {
+
+                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                        Swal.fire({
+                            input: "textarea",
+                            inputLabel: "Reason for Cancellation",
+                            inputPlaceholder: "Type your reason here...",
+                            inputAttributes: {
+                                "aria-label": "Type your reason here"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Submit Appeal',
+                            // Optional: Add validation to ensure a reason is entered
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return "You need to write a reason!";
+                                }
+                            }
+                        }).then((reasonResult) => {
+                            // Step 3: Check if the second dialog was confirmed and has a value.
+                            if (reasonResult.isConfirmed && reasonResult.value) {
+
+                                // Get the reason text from the textarea.
+                                const reason = reasonResult.value;
+
+                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                const encodedReason = encodeURIComponent(reason);
+
+                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                window.location.href = `CRUD/create_appeal.php?id=${bookingId}&reason=${encodedReason}`;
+                            }
+                        });
+                    }
+                });
+            });
+        });
 
         const cancelButton = document.querySelectorAll('.cancel-room-btn');
         cancelButton.forEach(button => {

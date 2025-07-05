@@ -24,8 +24,8 @@ if ($type == "rejected") {
     $stmt = $mysqli->prepare("UPDATE bookings SET rejected_reason = ? WHERE id = ?");
     $stmt->bind_param("si", $reason, $booking_id_to_processed);
 } else {
-    $stmt = $mysqli->prepare("UPDATE bookings SET status = 'Inactive', rejected_reason = ? WHERE id = ?");
-    $stmt->bind_param("si", $reason, $booking_id_to_processed);
+    $stmt = $mysqli->prepare("UPDATE bookings SET status = 'Inactive' WHERE id = ?");
+    $stmt->bind_param("i", $booking_id_to_processed);
 }
 
 if ($stmt->execute()) {
