@@ -64,13 +64,13 @@ function isActiveMulti($filenames, $folder)
         <li class="mb-2">
             <a href="<?= $baseUrl ?>/admin/manage-rooms/index.php"
                 class="btn btn-toggle d-inline-flex align-items-center rounded border-0 w-100 <?= isActiveMulti(['index.php', 'create.php', 'edit.php', 'detail.php'], 'manage-rooms') ?>">
-                <i class="bi bi-building-fill me-2"></i> Manage Rooms
+                <i class="bi bi-building-fill me-2"></i> Rooms
             </a>
         </li>
 
         <li class="mb-2">
             <a href="<?= $baseUrl ?>/admin/logs/index.php"
-                class="btn btn-toggle d-inline-flex align-items-center rounded border-0 w-100 <?= isActiveMulti(['index.php', 'create.php', 'edit.php', 'detail.php'], 'manage-rooms') ?>">
+                class="btn btn-toggle d-inline-flex align-items-center rounded border-0 w-100 <?= isActiveMulti(['index.php', 'create.php', 'edit.php', 'detail.php'], 'logs') ?>">
                 <i class="bi bi-building-fill me-2"></i> Logs
             </a>
         </li>

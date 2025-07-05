@@ -1,7 +1,11 @@
 <?php
 session_start();
 
-//Delete user swal 
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('location: ../../login.php');
+    exit;
+}
+
 $success_message = '';
 if (isset($_SESSION['success_message'])) {
     $success_message = $_SESSION['success_message'];
@@ -15,11 +19,6 @@ if (isset($_SESSION['error_message'])) {
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header('location: ../../login.php');
-    exit;
-}
-
-if ($_SESSION['user_status'] == 1) {
-    header('location: ../../index.php');
     exit;
 }
 
@@ -37,14 +36,61 @@ $stmt->close();
 
 if (!$user) {
     session_destroy();
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 
-// Query ambil semua data dari tabel rooms
-$sql = "SELECT id, name, price, description, created_at FROM rooms ORDER BY created_at DESC";
-$result = $mysqli->query($sql);
+$query_stmt = $mysqli->prepare("SELECT id, room_type, checkin_date, checkout_date, status, appeal_reason, rejected_reason FROM bookings WHERE user_id = ? AND  status != 'Inactive'");
+$query_stmt->bind_param("i", $user_id);
+$query_stmt->execute();
+$active_result = $query_stmt->get_result();
 
+$query_stmt->close();
+
+// Pastikan session user_id tersedia
+if (!isset($_SESSION['user_id'])) {
+    echo "User not logged in.";
+    exit;
+}
+
+$user_id = $_GET['user_id'] ?? null;
+
+if (!$user_id) {
+    // Redirect jika tidak ada user_id
+    header("Location: index.php");
+    exit();
+}
+
+$sql = "SELECT * FROM users WHERE id = ?";
+$stmt = $mysqli->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user_view = $result->fetch_assoc();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $new_password = $_POST['new_password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    if (strlen($new_password) < 6) {
+        $_SESSION['flash'] = ['type' => 'error', 'message' => 'Password must be at least 6 characters.'];
+    } elseif ($new_password !== $confirm_password) {
+        $_SESSION['flash'] = ['type' => 'error', 'message' => 'Passwords do not match.'];
+    } else {
+        $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+        $update = $mysqli->prepare("UPDATE users SET password_hash = ?, updated_at = NOW() WHERE id = ?");
+        $update->bind_param("si", $hashed_password, $user_id);
+
+        if ($update->execute()) {
+            $_SESSION['flash'] = ['type' => 'success', 'message' => 'Password updated successfully.'];
+        } else {
+            $_SESSION['flash'] = ['type' => 'error', 'message' => 'Failed to update password.'];
+        }
+
+        header("Location: reset_password.php?user_id=$user_id");
+        exit();
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -53,7 +99,7 @@ $result = $mysqli->query($sql);
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Manage Rooms | Al Capone</title>
+    <title>Profile | Al Capone</title>
     <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
@@ -64,11 +110,13 @@ $result = $mysqli->query($sql);
 
     <!-- CSS -->
     <link rel="stylesheet" href="../../assets/css/style.css" />
+
 </head>
 
 <body>
+
     <!-- Aside -->
-    <?php include_once __DIR__ . '/../sidebar.php'; ?>
+    <?php include_once __DIR__ . '../../sidebar.php'; ?>
     <!-- End of Aside -->
 
     <main class="col-lg-10" id="main">
@@ -79,7 +127,7 @@ $result = $mysqli->query($sql);
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h3 class="mb-0">Manage Rooms</h3>
+                <h4 class="mb-0 fw-semibold">Profile</h4>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -127,16 +175,16 @@ $result = $mysqli->query($sql);
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                             <li>
-                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                                <a href="profile/index.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
                                     <i class="bi bi-person me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Profile
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
                                         <path d="M1 1l4 4 4-4" />
                                     </svg>
-                                </button>
+                                </a>
                             </li>
                             <li>
-                                <a href=" /logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                <a href="../../logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
                                     <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Logout
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -154,61 +202,22 @@ $result = $mysqli->query($sql);
 
         <!-- End NavBar -->
 
+        <!-- HTML Form -->
         <div class="container">
-
-            <!-- Tabel Rooms -->
-            <div class="table-responsive">
-                <table id="dataTables" class="table table-striped border">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Room ID</th>
-                            <th scope="col">Room Name</th>
-                            <th scope="col">Price (Rp)</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($result && $result->num_rows > 0): ?>
-                            <?php $no = 1; ?>
-                            <?php while ($room = $result->fetch_assoc()): ?>
-                                <tr>
-                                    <th scope="row"><?= $no++; ?></th>
-                                    <td><?= htmlspecialchars($room['id']); ?></td>
-                                    <td><?= htmlspecialchars($room['name']); ?></td>
-                                    <td>Rp <?= number_format($room['price'], 0, ',', '.'); ?></td>
-                                    <td><?= htmlspecialchars($room['description']); ?></td>
-                                    <td class="d-flex gap-2">
-                                        <a href="manage-rooms/detail.php?id=<?= urlencode($room['id']); ?>" class="btn btn-primary btn-sm">
-                                            <i class="bi bi-eye-fill"></i> Detail
-                                        </a>
-                                        <a href="manage-rooms/edit.php?id=<?= urlencode($room['id']); ?>" class="btn btn-warning btn-sm text-dark">
-                                            <i class="bi bi-pencil-fill"></i> Edit
-                                        </a>
-                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-room-btn" data-id="<?= htmlspecialchars($room['id']); ?>" data-name="<?= htmlspecialchars($room['name']); ?>">
-                                            <i class="bi bi-trash-fill"></i> Delete
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="7" class="text-center">No rooms found</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-
-            <?php
-            // Cleanup
-            if ($result) $result->free();
-            $mysqli->close();
-            ?>
+            <h5 class="card-title mb-4">Reset Password for <?= htmlspecialchars($user_view['username'] ?? '') ?></h5>
+            <form method="POST">
+                <div class="mb-3">
+                    <label for="new_password" class="form-label">New Password</label>
+                    <input type="password" name="new_password" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="confirm_password" class="form-label">Confirm Password</label>
+                    <input type="password" name="confirm_password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn bg-blue w-auto">Update Password</button>
+                <a href="index.php" class="btn btn-secondary">Back</a>
+            </form>
         </div>
-
-
     </main>
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
@@ -244,7 +253,114 @@ $result = $mysqli->query($sql);
     <!-- Main JS -->
     <script src="../../assets/js/main.js"></script>
 
+    <?php if (isset($_SESSION['flash'])): ?>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
+            Swal.fire({
+                icon: '<?= $_SESSION['flash']['type'] ?>',
+                title: '<?= $_SESSION['flash']['type'] === 'success' ? 'Success!' : 'Error!' ?>',
+                text: <?= json_encode($_SESSION['flash']['message']) ?>,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        </script>
+        <?php unset($_SESSION['flash']); ?>
+    <?php endif; ?>
+
     <script>
+        <?php if (!empty($success_message)): ?>
+            Swal.fire({
+                title: 'Success!',
+                text: <?php echo json_encode($success_message); ?>,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        <?php endif; ?>
+        <?php if (!empty($error_message)): ?>
+            Swal.fire({
+                title: 'Error!',
+                text: <?php echo json_encode($error_message); ?>,
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        <?php endif; ?>
+
+        const cancelButton = document.querySelectorAll('.cancel-room-btn');
+        cancelButton.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior
+                e.preventDefault();
+
+                // Get the user ID and username from the data attributes
+                const bookingId = this.dataset.id;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to cancel this booking?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, please'
+                }).then((result) => {
+                    // Step 1: Check if the admin confirmed the first dialog.
+                    if (result.isConfirmed) {
+
+                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                        Swal.fire({
+                            input: "textarea",
+                            inputLabel: "Reason for Cancellation",
+                            inputPlaceholder: "Type your reason here...",
+                            inputAttributes: {
+                                "aria-label": "Type your reason here"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Submit Appeal',
+                            // Optional: Add validation to ensure a reason is entered
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return "You need to write a reason!";
+                                }
+                            }
+                        }).then((reasonResult) => {
+                            // Step 3: Check if the second dialog was confirmed and has a value.
+                            if (reasonResult.isConfirmed && reasonResult.value) {
+
+                                // Get the reason text from the textarea.
+                                const reason = reasonResult.value;
+
+                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                const encodedReason = encodeURIComponent(reason);
+
+                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                window.location.href = `CRUD/create_appeal.php?id=${bookingId}&reason=${encodedReason}`;
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+        // Select all elements with the class '.appeal-room-btn'
+        const appealButtons = document.querySelectorAll('.appeal-room-btn');
+
+        // Loop through the correct variable 'appealButtons'
+        appealButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior if it's an <a> tag
+                e.preventDefault();
+
+                // Get the reason from the data-appeal attribute
+                const reason = this.dataset.appeal;
+
+                Swal.fire({
+                    title: "Cancellation Appeal Reason:",
+                    // Use backticks (`) instead of single quotes (') to correctly display the variable
+                    html: `<pre style="white-space: pre-wrap; text-align: left; margin-left: 1rem;">${reason}</pre>`,
+                    confirmButtonText: 'Close'
+                });
+            });
+        });
+
         // Get the current URL path (without the base URL)
         const currentUrl = window.location.pathname;
 

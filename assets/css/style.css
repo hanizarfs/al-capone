@@ -33,6 +33,10 @@ html[data-bs-theme="dark"] {
         background: #0c0c0c !important;
     }
 
+    a.btn-toggle:hover {
+        background: #222;
+    }
+
 
 }
 
@@ -158,9 +162,9 @@ main {
     background: darkblue;
 }
 
-
-
-
+a.btn-toggle:hover {
+    background: whitesmoke;
+}
 
 
 .hero-section {

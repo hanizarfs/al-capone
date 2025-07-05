@@ -1,18 +1,6 @@
 <?php
 session_start();
 
-//Delete user swal 
-$success_message = '';
-if (isset($_SESSION['success_message'])) {
-    $success_message = $_SESSION['success_message'];
-    unset($_SESSION['success_message']);
-}
-$error_message = '';
-if (isset($_SESSION['error_message'])) {
-    $error_message = $_SESSION['error_message'];
-    unset($_SESSION['error_message']);
-}
-
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
     header('location: ../../login.php');
     exit;
@@ -41,10 +29,25 @@ if (!$user) {
     exit;
 }
 
-// Query ambil semua data dari tabel rooms
-$sql = "SELECT id, name, price, description, created_at FROM rooms ORDER BY created_at DESC";
-$result = $mysqli->query($sql);
+// Handle form submission
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $room_id = trim($_POST['room_id']);
+    $name = trim($_POST['name']);
+    $price = floatval($_POST['price']);
+    $description = trim($_POST['description']);
+    $availability = $_POST['availability'] ?? 'available';
+    $created_at = date('Y-m-d H:i:s');
 
+    // Insert to DB
+    $stmtCreateRoom = $mysqli->prepare("INSERT INTO rooms (id, name, price, description, availability, created_at) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmtCreateRoom->bind_param("ssdsis", $room_id, $name, $price, $description, $availability, $created_at);
+
+    if ($stmtCreateRoom->execute()) {
+        $_SESSION['flash'] = ['type' => 'success', 'message' => 'Room created successfully.'];
+    } else {
+        $_SESSION['flash'] = ['type' => 'error', 'message' => 'Failed to create room.'];
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -53,14 +56,15 @@ $result = $mysqli->query($sql);
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rooms | Al Capone</title>
+    <title>Create Rooms | Al Capone</title>
     <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" />
 
     <!-- Bootstrap Icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
 
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css" />
@@ -141,7 +145,7 @@ $result = $mysqli->query($sql);
 
 <body>
     <!-- Aside -->
-    <?php include_once __DIR__ . '/../sidebar.php'; ?>
+    <?php include_once __DIR__ . '../../sidebar.php'; ?>
     <!-- End of Aside -->
 
     <main class="col-lg-10" id="main">
@@ -152,7 +156,7 @@ $result = $mysqli->query($sql);
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h4 class="fw-semibold mb-0">Manage Rooms</h4>
+                <h4 class="fw-semibold mb-0">Rooms</h4>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -200,7 +204,7 @@ $result = $mysqli->query($sql);
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                             <li>
-                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                                <button type="button" class="dropdown-item d-flex align-items-center">
                                     <i class="bi bi-person me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Profile
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -209,7 +213,7 @@ $result = $mysqli->query($sql);
                                 </button>
                             </li>
                             <li>
-                                <a href="../../logout.php" type="button" class="dropdown-item d-flex align-items-center" aria-pressed="false">
+                                <a href="#" onclick="logout()" class="dropdown-item d-flex align-items-center">
                                     <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Logout
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -228,71 +232,89 @@ $result = $mysqli->query($sql);
         <!-- End NavBar -->
 
         <div class="container">
-            <!-- Heading for User Management and User Level -->
+
+            <!-- Heading and Breadcrumb for "Create New Room" -->
             <div class="section-header mb-4">
-                <a href="create.php" class="btn bg-blue w-auto">
-                    <div class="d-flex justify-content-center align-items-center"><i class="bi bi-plus me-1"></i>New Room</div>
-                </a>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="card-title mb-0">Create New Room</h5>
+                </div>
+
+                <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item">
+                            <a href="index.php" class="text-primary text-decoration-none">Rooms</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page">Create</li>
+                    </ol>
+                </nav>
             </div>
 
-            <!-- Table for User Management -->
-            <div class="table-responsive">
-                <table id="dataTables" class="table table-striped border">
-                    <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Room ID</th>
-                            <th scope="col">Room Name</th>
-                            <th scope="col">Price (Rp)</th>
-                            <th scope="col">Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php if ($result && $result->num_rows > 0): ?>
-                            <?php $no = 1; ?>
-                            <?php while ($room = $result->fetch_assoc()): ?>
-                                <tr>
-                                    <th scope="row"><?= $no++; ?></th>
-                                    <td><?= htmlspecialchars($room['id']); ?></td>
-                                    <td><?= htmlspecialchars($room['name']); ?></td>
-                                    <td>Rp <?= number_format($room['price'], 0, ',', '.'); ?></td>
-                                    <td><?= htmlspecialchars($room['description']); ?></td>
-                                </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
-                            <tr>
-                                <td colspan="7" class="text-center">No rooms found</td>
-                            </tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Room ID</label>
+                        <input type="text" name="room_id" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Room Name</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Price (IDR)</label>
+                        <input type="number" name="price" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Availability</label>
+                        <input type="number" name="availability" class="form-control" required>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Description</label>
+                        <textarea name="description" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button type="submit" class="btn bg-blue w-auto">Save Room</button>
+                </div>
+            </form>
         </div>
+
     </main>
 
-    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+
+    <!-- Sidebar for Mobile -->
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample"
+        aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header">
-            <a href="../../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
+            <a href="../../index.php" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title"
+                id="offcanvasExampleLabel">Al Capone</a>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body mt-0">
             <ul class="list-unstyled ps-0" id="sidebar">
                 <li class="mb-2">
-                    <a href="dashboard.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
+                    <a href="../dashboard.php"
+                        class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100">
+                        <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                 </li>
                 <li class="mb-2">
-                    <a href="userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                    <a href="index.php"
+                        class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue">
+                        <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                 </li>
                 <li class="mb-2">
-                    <a href="cancellation-requests.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
+                    <a href="../cancellationRequests.php"
+                        class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100">
+                        <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
                 </li>
                 <li class="mb-2">
-                    <a href="online-checkin.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
+                    <a href="../onlineCheckin.php"
+                        class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100">
+                        <i class="bi bi-check-circle-fill me-2"></i> Online Check-in </a>
                 </li>
             </ul>
         </div>
     </div>
-    <!-- End Main Content -->
+    <!-- End Sidebar for Mobile -->
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"></script>
@@ -307,6 +329,22 @@ $result = $mysqli->query($sql);
     <!-- Main JS -->
     <script src="../../assets/js/main.js"></script>
 
+    <?php if (isset($_SESSION['flash'])): ?>
+        <script>
+            Swal.fire({
+                icon: '<?= $_SESSION['flash']['type'] ?>',
+                title: '<?= $_SESSION['flash']['type'] === 'success' ? 'Success!' : 'Error!' ?>',
+                text: <?= json_encode($_SESSION['flash']['message']) ?>,
+                timer: 2000,
+                showConfirmButton: false,
+                willClose: () => {
+                    window.location.href = "index.php";
+                }
+            });
+        </script>
+        <?php unset($_SESSION['flash']); ?>
+    <?php endif; ?>
+
     <script>
         $(document).ready(function() {
             $("#dataTables").DataTable({
@@ -316,82 +354,9 @@ $result = $mysqli->query($sql);
                 }],
             });
         });
+    </script>
 
-        // Add SweetAlert2 confirmation for delete
-        const deleteButtons = document.querySelectorAll('.delete-btn');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                // Prevent the default link behavior
-                e.preventDefault();
-
-                // Get the user ID and username from the data attributes
-                const userId = this.dataset.id;
-                const username = this.dataset.username;
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: `You are about to deactivate the user: ${username}?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, deactivate it!'
-                }).then((result) => {
-                    // Step 1: Check if the admin confirmed the first dialog.
-                    if (result.isConfirmed) {
-
-                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
-                        Swal.fire({
-                            input: "textarea",
-                            inputLabel: "Reason for Deactivation",
-                            inputPlaceholder: "Type your reason here...",
-                            inputAttributes: {
-                                "aria-label": "Type your reason here"
-                            },
-                            showCancelButton: true,
-                            confirmButtonText: 'Submit Deactivation',
-                            // Optional: Add validation to ensure a reason is entered
-                            inputValidator: (value) => {
-                                if (!value) {
-                                    return "You need to write a reason!";
-                                }
-                            }
-                        }).then((reasonResult) => {
-                            // Step 3: Check if the second dialog was confirmed and has a value.
-                            if (reasonResult.isConfirmed && reasonResult.value) {
-
-                                // Get the reason text from the textarea.
-                                const reason = reasonResult.value;
-
-                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
-                                const encodedReason = encodeURIComponent(reason);
-
-                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
-                                window.location.href = `CRUD/user_deactivate.php?id=${userId}&reason=${encodedReason}`;
-                            }
-                        });
-                    }
-                });
-            });
-        });
-
-        // swal delete
-        <?php if (!empty($success_message)): ?>
-            Swal.fire({
-                title: 'Success!',
-                text: <?php echo json_encode($success_message); ?>,
-                icon: 'success',
-                confirmButtonText: 'OK'
-            });
-        <?php endif; ?>
-        <?php if (!empty($error_message)): ?>
-            Swal.fire({
-                title: 'Error!',
-                text: <?php echo json_encode($error_message); ?>,
-                icon: 'error',
-                confirmButtonText: 'Try Again'
-            });
-        <?php endif; ?>
-
+    <script>
         // Get the current URL path (without the base URL)
         const currentUrl = window.location.pathname;
 
@@ -403,10 +368,25 @@ $result = $mysqli->query($sql);
             // Get the href of the link (relative URL)
             const linkHref = link.getAttribute("href");
 
-            // Check if the current URL path includes the link's href (for index.html, create.html, etc.)
-            if (currentUrl.includes(linkHref)) {
+            // Check if the current URL path contains part of the link's href (e.g., 'user-management')
+            if (currentUrl.includes(linkHref.split("/").pop())) {
                 // Add the 'bg-blue' class to the active link
                 link.classList.add("bg-blue");
+            }
+        });
+
+        document.getElementById("addUserForm").addEventListener("submit", function(e) {
+            const password = document.getElementById("password").value;
+            const confirmPassword = document.getElementById("password-confirm").value;
+
+            if (password !== confirmPassword) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Error!',
+                    text: 'Passwords do not match!',
+                    icon: 'error'
+                });
+                return false;
             }
         });
     </script>

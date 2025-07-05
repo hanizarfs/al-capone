@@ -136,13 +136,13 @@ $query2_stmt->close();
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                             <li>
-                                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
+                                <a href="profile/index.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
                                     <i class="bi bi-person me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Profile
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
                                         <path d="M1 1l4 4 4-4" />
                                     </svg>
-                                </button>
+                                </a>
                             </li>
                             <li>
                                 <a href="../logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">

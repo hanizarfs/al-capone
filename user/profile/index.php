@@ -2,26 +2,27 @@
 session_start();
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 
-if ($_SESSION['user_status'] == 1) {
-    header('location: ../index.php');
+$success_message = '';
+if (isset($_SESSION['success_message'])) {
+    $success_message = $_SESSION['success_message'];
+    unset($_SESSION['success_message']);
+}
+$error_message = '';
+if (isset($_SESSION['error_message'])) {
+    $error_message = $_SESSION['error_message'];
+    unset($_SESSION['error_message']);
+}
+
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('location: ../../login.php');
     exit;
 }
 
-require_once('../config.php');
-
-$totalRooms = $mysqli->query("SELECT COUNT(*) AS total FROM rooms")->fetch_assoc()['total'];
-
-$activeBookings = $mysqli->query("SELECT COUNT(*) AS total FROM bookings WHERE status = 'ACTIVE'")->fetch_assoc()['total'];
-
-$nonActiveBookings = $mysqli->query("SELECT COUNT(*) AS total FROM bookings WHERE status != 'ACTIVE'")->fetch_assoc()['total'];
-
-$totalUsers = $mysqli->query("SELECT COUNT(*) AS total FROM users")->fetch_assoc()['total'];
-$availableRooms = $mysqli->query("SELECT SUM(availability) AS total FROM rooms")->fetch_assoc()['total'];
-$todayBookings = $mysqli->query("SELECT COUNT(*) AS total FROM bookings WHERE DATE(booking_timestamp) = CURDATE()")->fetch_assoc()['total'];
+require_once('../../config.php');
 
 $user_id = $_SESSION['user_id'];
 
@@ -31,15 +32,36 @@ $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
-// $stmt->close();
-// $mysqli->close();
+$stmt->close();
 
 if (!$user) {
     session_destroy();
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 
+$query_stmt = $mysqli->prepare("SELECT id, room_type, checkin_date, checkout_date, status, appeal_reason, rejected_reason FROM bookings WHERE user_id = ? AND  status != 'Inactive'");
+$query_stmt->bind_param("i", $user_id);
+$query_stmt->execute();
+$active_result = $query_stmt->get_result();
+
+$query_stmt->close();
+
+// Pastikan session user_id tersedia
+if (!isset($_SESSION['user_id'])) {
+    echo "User not logged in.";
+    exit;
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Ambil data user dari database
+$sqlUser = "SELECT * FROM users WHERE id = ?";
+$stmtUser = $mysqli->prepare($sqlUser);
+$stmtUser->bind_param("i", $user_id);
+$stmtUser->execute();
+$result = $stmtUser->get_result();
+$user_view = $result->fetch_assoc();
 
 ?>
 
@@ -49,8 +71,8 @@ if (!$user) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Al Capone</title>
-    <link rel="icon" type="image/x-icon" href="../assets/img/Logo.webp" />
+    <title>Profile | Al Capone</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" />
@@ -59,14 +81,14 @@ if (!$user) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../../assets/css/style.css" />
 
 </head>
 
 <body>
 
     <!-- Aside -->
-    <?php include_once __DIR__ . '/sidebar.php'; ?>
+    <?php include_once __DIR__ . '../../sidebar.php'; ?>
     <!-- End of Aside -->
 
     <main class="col-lg-10" id="main">
@@ -77,7 +99,7 @@ if (!$user) {
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h4 class="fw-semibold mb-0">Dashboard</h4>
+                <h4 class="mb-0 fw-semibold">Profile</h4>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -125,16 +147,16 @@ if (!$user) {
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="profile-dropdown">
                             <li>
-                                <button type="button" class="dropdown-item d-flex align-items-center">
+                                <a href="profile/index.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light" aria-pressed="false">
                                     <i class="bi bi-person me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Profile
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
                                         <path d="M1 1l4 4 4-4" />
                                     </svg>
-                                </button>
+                                </a>
                             </li>
                             <li>
-                                <a href="#" onclick="logout()" class="dropdown-item d-flex align-items-center">
+                                <a href="../../logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
                                     <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Logout
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -153,104 +175,55 @@ if (!$user) {
         <!-- End NavBar -->
 
         <div class="container">
-            <h1 class="mb-4 fw-bold">👋 Halo, Admin</h1>
-
-            <!-- Statistik Kartu -->
-            <div class="row g-4 mb-4">
-
-                <div class="col-md-4">
-                    <div class="card text-white bg-primary shadow-sm border-0">
-                        <div class="card-body">
-                            <h6 class="text-light">Total Rooms</h6>
-                            <h2 class="fw-bold"><?= $totalRooms ?></h2>
+            <form class="mb-4">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" disabled value="<?= htmlspecialchars($user_view['first_name']) ?>">
                         </div>
                     </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card text-white bg-success shadow-sm border-0">
-                        <div class="card-body">
-                            <h6 class="text-light">Active Bookings</h6>
-                            <h2 class="fw-bold"><?= $activeBookings ?></h2>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" disabled value="<?= htmlspecialchars($user_view['last_name']) ?>">
                         </div>
                     </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card text-white bg-danger shadow-sm border-0">
-                        <div class="card-body">
-                            <h6 class="text-light">Non Active Bookings</h6>
-                            <h2 class="fw-bold"><?= $nonActiveBookings ?></h2>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" disabled value="<?= htmlspecialchars($user_view['username']) ?>">
                         </div>
                     </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card text-white bg-info shadow-sm border-0">
-                        <div class="card-body">
-                            <h6 class="text-light">Available Rooms</h6>
-                            <h2 class="fw-bold"><?= $availableRooms ?></h2>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Email address</label>
+                            <input type="email" class="form-control" disabled value="<?= htmlspecialchars($user_view['email']) ?>">
                         </div>
                     </div>
-                </div>
-
-                <div class="col-md-4">
-                    <div class="card text-white bg-warning shadow-sm border-0">
-                        <div class="card-body">
-                            <h6 class="text-dark">Today's Bookings</h6>
-                            <h2 class="fw-bold"><?= $todayBookings ?></h2>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" disabled value="<?= htmlspecialchars($user_view['phone']) ?>">
                         </div>
                     </div>
-                </div>
+                    <div class="d-flex justify-content-start gap-2 mt-3">
+                        <a href="edit.php?user_id=<?= $user_id ?>" class="btn bg-blue w-auto" name="edit">Edit Profile</a>
 
-                <div class="col-md-4">
-                    <div class="card text-white bg-dark shadow-sm border-0">
-                        <div class="card-body">
-                            <h6 class="text-light">Total Users</h6>
-                            <h2 class="fw-bold"><?= $totalUsers ?></h2>
-                        </div>
+                        <a href="reset_password.php?user_id=<?= $user_view['id'] ?>" class="btn btn-warning" id="reset-password-btn"
+                            data-id="<?= $user_view['id'] ?>"
+                            data-username="<?= htmlspecialchars($user_view['username']) ?>">
+                            <i class="bi bi-key-fill me-1"></i> Reset Password
+                        </a>
                     </div>
                 </div>
-            </div>
-
-            <!-- Grafik dan Aktivitas -->
-            <div class="row g-4">
-                <div class="col-lg-6">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold mb-3">📊 Booking Status Overview</h5>
-                            <canvas id="bookingChart" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-lg-6">
-                    <div class="card shadow-sm border-0">
-                        <div class="card-body">
-                            <h5 class="card-title fw-bold mb-3">🕓 Recent Activities</h5>
-                            <ul class="list-group list-group-flush">
-                                <?php
-                                $logs = $mysqli->query("SELECT * FROM user_logs ORDER BY log_timestamp DESC LIMIT 5");
-                                while ($log = $logs->fetch_assoc()):
-                                ?>
-                                    <li class="list-group-item small">
-                                        <strong><?= htmlspecialchars($log['action']) ?></strong> by admin #<?= $log['admin_id'] ?> - <?= date('d M Y H:i', strtotime($log['log_timestamp'])) ?>
-                                    </li>
-                                <?php endwhile;
-                                $mysqli->close();
-                                ?>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            </form>
         </div>
-
     </main>
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header">
-            <a href="../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
+            <a href="../../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body mt-0">
@@ -279,60 +252,102 @@ if (!$user) {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Main JS -->
-    <script src="../assets/js/main.js"></script>
+    <script src="../../assets/js/main.js"></script>
 
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('bookingChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: ['Active Bookings', 'Non Active'],
-                datasets: [{
-                    data: [<?= $activeBookings ?>, <?= $nonActiveBookings ?>],
-                    backgroundColor: ['#198754', '#dc3545'],
-                    borderColor: ['#fff', '#fff'],
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            color: '#333'
-                        }
+        <?php if (!empty($success_message)): ?>
+            Swal.fire({
+                title: 'Success!',
+                text: <?php echo json_encode($success_message); ?>,
+                icon: 'success',
+                confirmButtonText: 'OK'
+            });
+        <?php endif; ?>
+        <?php if (!empty($error_message)): ?>
+            Swal.fire({
+                title: 'Error!',
+                text: <?php echo json_encode($error_message); ?>,
+                icon: 'error',
+                confirmButtonText: 'Try Again'
+            });
+        <?php endif; ?>
+
+        const cancelButton = document.querySelectorAll('.cancel-room-btn');
+        cancelButton.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior
+                e.preventDefault();
+
+                // Get the user ID and username from the data attributes
+                const bookingId = this.dataset.id;
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: `You are about to cancel this booking?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, please'
+                }).then((result) => {
+                    // Step 1: Check if the admin confirmed the first dialog.
+                    if (result.isConfirmed) {
+
+                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                        Swal.fire({
+                            input: "textarea",
+                            inputLabel: "Reason for Cancellation",
+                            inputPlaceholder: "Type your reason here...",
+                            inputAttributes: {
+                                "aria-label": "Type your reason here"
+                            },
+                            showCancelButton: true,
+                            confirmButtonText: 'Submit Appeal',
+                            // Optional: Add validation to ensure a reason is entered
+                            inputValidator: (value) => {
+                                if (!value) {
+                                    return "You need to write a reason!";
+                                }
+                            }
+                        }).then((reasonResult) => {
+                            // Step 3: Check if the second dialog was confirmed and has a value.
+                            if (reasonResult.isConfirmed && reasonResult.value) {
+
+                                // Get the reason text from the textarea.
+                                const reason = reasonResult.value;
+
+                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                const encodedReason = encodeURIComponent(reason);
+
+                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                window.location.href = `CRUD/create_appeal.php?id=${bookingId}&reason=${encodedReason}`;
+                            }
+                        });
                     }
-                }
-            }
+                });
+            });
         });
-    </script>
 
-    <script>
-        function logout() {
-            let theme = localStorage.getItem('theme');
-            console.log('Current theme:', theme);
-            if (theme == 'dark') {
-                console.log("halooo");
-                localStorage.removeItem('theme');
-                console.log("tesss");
-                localStorage.setItem('themess', 'red');
-                localStorage.clear('theme');
-                // localStorage.setItem('theme', 'red'); // Atur ulang
-            }
-            localStorage.setItem('themes', 'blue');
-            localStorage.setItem('theme', 'black');
+        // Select all elements with the class '.appeal-room-btn'
+        const appealButtons = document.querySelectorAll('.appeal-room-btn');
 
-            // Redirect
-            // window.location.href = '../logout.php';
-        }
-    </script>
+        // Loop through the correct variable 'appealButtons'
+        appealButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the default link behavior if it's an <a> tag
+                e.preventDefault();
 
-    <script>
+                // Get the reason from the data-appeal attribute
+                const reason = this.dataset.appeal;
+
+                Swal.fire({
+                    title: "Cancellation Appeal Reason:",
+                    // Use backticks (`) instead of single quotes (') to correctly display the variable
+                    html: `<pre style="white-space: pre-wrap; text-align: left; margin-left: 1rem;">${reason}</pre>`,
+                    confirmButtonText: 'Close'
+                });
+            });
+        });
+
         // Get the current URL path (without the base URL)
         const currentUrl = window.location.pathname;
 

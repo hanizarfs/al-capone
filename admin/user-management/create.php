@@ -137,7 +137,7 @@ if (!$user) {
                     <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
             </li>
             <li class="mb-2">
-                <a href="../userManagement.php"
+                <a href="index.php"
                     class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue">
                     <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
             </li>
@@ -252,7 +252,7 @@ if (!$user) {
                         role.</p>
                     <nav style="--bs-breadcrumb-divider: '>'" aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="../userManagement.php" class="text-blue">User
+                            <li class="breadcrumb-item"><a href="index.php" class="text-blue">User
                                     Management</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Create</li>
                         </ol>
@@ -352,7 +352,7 @@ if (!$user) {
                         <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                 </li>
                 <li class="mb-2">
-                    <a href="../userManagement.php"
+                    <a href="index.php"
                         class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue">
                         <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                 </li>

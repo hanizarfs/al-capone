@@ -234,7 +234,7 @@ $result = $mysqli->query($sql);
         <div class="container">
             <!-- Heading for User Management and User Level -->
             <div class="section-header mb-4">
-                <a href="user-management/create.php" class="btn bg-blue w-auto">
+                <a href="create.php" class="btn bg-blue w-auto">
                     <div class="d-flex justify-content-center align-items-center"><i class="bi bi-plus me-1"></i>New User</div>
                 </a>
             </div>
@@ -284,10 +284,10 @@ $result = $mysqli->query($sql);
                                         } ?></td>
 
                                     <td>
-                                        <a href="user-management/detail.php?id=<?php echo $user_query['id']; ?>" class="btn bg-blue w-auto">
+                                        <a href="detail.php?id=<?php echo $user_query['id']; ?>" class="btn bg-blue w-auto">
                                             <div class="d-flex justify-content-center align-items-center"><i class="bi bi-eye-fill me-1"></i>Detail</div>
                                         </a>
-                                        <a href="user-management/edit.php?id=<?php echo $user_query['id']; ?>" class="btn bg-warning w-auto">
+                                        <a href="edit.php?id=<?php echo $user_query['id']; ?>" class="btn bg-warning w-auto">
                                             <div class="d-flex justify-content-center align-items-center text-dark"><i class="bi bi-pencil-fill me-1"></i>Edit</div>
                                         </a>
                                         <?php if ($user_query['account_status'] == "Active") { ?>

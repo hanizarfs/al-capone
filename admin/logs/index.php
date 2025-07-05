@@ -53,7 +53,7 @@ $result = $mysqli->query($sql);
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Rooms | Al Capone</title>
+    <title>Logs | Al Capone</title>
     <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
@@ -152,7 +152,7 @@ $result = $mysqli->query($sql);
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h4 class="fw-semibold mb-0">Manage Rooms</h4>
+                <h4 class="fw-semibold mb-0">Logs</h4>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -227,46 +227,101 @@ $result = $mysqli->query($sql);
 
         <!-- End NavBar -->
 
+        <?php
+
+        // Ambil data user logs
+        $userLogs = $mysqli->query("SELECT * FROM user_logs")->fetch_all(MYSQLI_ASSOC);
+
+        // Ambil data cancellation logs
+        $cancellationLogs = $mysqli->query("SELECT * FROM cancellation_logs")->fetch_all(MYSQLI_ASSOC);
+        ?>
+
         <div class="container">
-            <!-- Heading for User Management and User Level -->
-            <div class="section-header mb-4">
-                <a href="create.php" class="btn bg-blue w-auto">
-                    <div class="d-flex justify-content-center align-items-center"><i class="bi bi-plus me-1"></i>New Room</div>
-                </a>
+
+            <!-- User Logs -->
+            <div class="section-header mb-4 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">User Logs</h5>
+                <button class="btn btn-danger" id="clearUserLogsBtn">
+                    <i class="bi bi-trash me-1"></i>Clear Data User Log
+                </button>
             </div>
 
-            <!-- Table for User Management -->
-            <div class="table-responsive">
-                <table id="dataTables" class="table table-striped border">
+            <div class="table-responsive mb-5">
+                <table id="userLogsTable" class="table table-striped border">
                     <thead>
                         <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">Room ID</th>
-                            <th scope="col">Room Name</th>
-                            <th scope="col">Price (Rp)</th>
-                            <th scope="col">Description</th>
+                            <th>#</th>
+                            <th>Admin ID</th>
+                            <th>Action</th>
+                            <th>Affected User</th>
+                            <th>Reason</th>
+                            <th>Timestamp</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php if ($result && $result->num_rows > 0): ?>
-                            <?php $no = 1; ?>
-                            <?php while ($room = $result->fetch_assoc()): ?>
+                        <?php if (!empty($userLogs)) : ?>
+                            <?php foreach ($userLogs as $index => $log) : ?>
                                 <tr>
-                                    <th scope="row"><?= $no++; ?></th>
-                                    <td><?= htmlspecialchars($room['id']); ?></td>
-                                    <td><?= htmlspecialchars($room['name']); ?></td>
-                                    <td>Rp <?= number_format($room['price'], 0, ',', '.'); ?></td>
-                                    <td><?= htmlspecialchars($room['description']); ?></td>
+                                    <td><?= $index + 1 ?></td>
+                                    <td><?= htmlspecialchars($log['admin_id']) ?></td>
+                                    <td><?= htmlspecialchars($log['action']) ?></td>
+                                    <td><?= htmlspecialchars($log['affected_user']) ?></td>
+                                    <td><?= htmlspecialchars($log['reason']) ?></td>
+                                    <td><?= htmlspecialchars($log['log_timestamp']) ?></td>
                                 </tr>
-                            <?php endwhile; ?>
-                        <?php else: ?>
+                            <?php endforeach ?>
+                        <?php else : ?>
                             <tr>
-                                <td colspan="7" class="text-center">No rooms found</td>
+                                <td colspan="6" class="text-center">No logs found</td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
             </div>
+
+            <!-- Cancellation Logs -->
+            <div class="section-header mb-4 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Cancellation Logs</h5>
+                <button class="btn btn-danger" id="clearCancellationLogsBtn">
+                    <i class="bi bi-trash me-1"></i>Clear Data Cancellation Log
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table id="cancellationLogsTable" class="table table-striped border">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>ID</th>
+                            <th>Admin ID</th>
+                            <th>Action</th>
+                            <th>Affected Booking</th>
+                            <th>Reason</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if (!empty($cancellationLogs)) : ?>
+                            <?php foreach ($cancellationLogs as $index => $log) : ?>
+                                <tr>
+                                    <td><?= $index + 1 ?></td>
+                                    <td><?= htmlspecialchars($log['id']) ?></td>
+                                    <td><?= htmlspecialchars($log['admin_id']) ?></td>
+                                    <td><?= htmlspecialchars($log['action']) ?></td>
+                                    <td><?= htmlspecialchars($log['affected_booking']) ?></td>
+                                    <td><?= htmlspecialchars($log['reason']) ?></td>
+                                    <td><?= htmlspecialchars($log['log_timestamp']) ?></td>
+                                </tr>
+                            <?php endforeach ?>
+                        <?php else : ?>
+                            <tr>
+                                <td colspan="7" class="text-center">No logs found</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </main>
 
@@ -306,6 +361,42 @@ $result = $mysqli->query($sql);
 
     <!-- Main JS -->
     <script src="../../assets/js/main.js"></script>
+
+    <script>
+        // Tombol Clear User Logs
+        document.getElementById('clearUserLogsBtn').addEventListener('click', function() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This will permanently delete all user logs!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete all!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'delete_user_logs.php';
+                }
+            });
+        });
+
+        // Tombol Clear Cancellation Logs
+        document.getElementById('clearCancellationLogsBtn').addEventListener('click', function() {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This will permanently delete all cancellation logs!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete all!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = 'delete_cancellation_logs.php';
+                }
+            });
+        });
+    </script>
 
     <script>
         $(document).ready(function() {
