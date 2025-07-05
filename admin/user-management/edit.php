@@ -144,7 +144,7 @@ $user_view = $result->fetch_assoc();
                 <a href="../dashboard.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
             </li>
             <li class="mb-2">
-                <a href="../userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                <a href="index.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
             </li>
             <li class="mb-2">
                 <a href="../cancellationRequests.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
@@ -239,7 +239,7 @@ $user_view = $result->fetch_assoc();
                     <p>View the details of the selected user, including their name, email, role, and account status. You can choose to edit or delete their account if needed.</p>
                     <nav style="--bs-breadcrumb-divider: '>'" aria-label="breadcrumb">
                         <ol class="breadcrumb">
-                            <li class="breadcrumb-item"><a href="../userManagement.php" class="text-blue">User Management</a></li>
+                            <li class="breadcrumb-item"><a href="index.php" class="text-blue">User Management</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Details</li>
                         </ol>
                     </nav>
@@ -280,11 +280,11 @@ $user_view = $result->fetch_assoc();
                             </div>
                         </div>
                         <div class="col-md-12">
-                                <div class="mb-3">
-                            <label class="form-label">Reason to Edit: <span class="text-danger">*</span></label>
-                                    <input type="textarea" class="form-control" name="reason" required>
-                                </div>
+                            <div class="mb-3">
+                                <label class="form-label">Reason to Edit: <span class="text-danger">*</span></label>
+                                <input type="textarea" class="form-control" name="reason" required>
                             </div>
+                        </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Created at</label>
@@ -328,7 +328,7 @@ $user_view = $result->fetch_assoc();
                     <a href="../dashboard.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-house-door-fill me-2"></i> Dashboard </a>
                 </li>
                 <li class="mb-2">
-                    <a href="../userManagement.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
+                    <a href="index.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100 bg-blue"> <i class="bi bi-person-lines-fill me-2"></i> User Management </a>
                 </li>
                 <li class="mb-2">
                     <a href="../cancellationRequests.php" class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed rounded-3 w-100"> <i class="bi bi-x-circle-fill me-2"></i> Cancellation Requests </a>
@@ -413,37 +413,37 @@ $user_view = $result->fetch_assoc();
                     if (result.isConfirmed) {
                         if (result.isConfirmed) {
 
-                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
-                        Swal.fire({
-                            input: "textarea",
-                            inputLabel: "Reason for resetting password",
-                            inputPlaceholder: "Type your reason here...",
-                            inputAttributes: {
-                                "aria-label": "Type your reason here"
-                            },
-                            showCancelButton: true,
-                            confirmButtonText: 'Submit Reset Password',
-                            // Optional: Add validation to ensure a reason is entered
-                            inputValidator: (value) => {
-                                if (!value) {
-                                    return "You need to write a reason!";
+                            // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
+                            Swal.fire({
+                                input: "textarea",
+                                inputLabel: "Reason for resetting password",
+                                inputPlaceholder: "Type your reason here...",
+                                inputAttributes: {
+                                    "aria-label": "Type your reason here"
+                                },
+                                showCancelButton: true,
+                                confirmButtonText: 'Submit Reset Password',
+                                // Optional: Add validation to ensure a reason is entered
+                                inputValidator: (value) => {
+                                    if (!value) {
+                                        return "You need to write a reason!";
+                                    }
                                 }
-                            }
-                        }).then((reasonResult) => {
-                            // Step 3: Check if the second dialog was confirmed and has a value.
-                            if (reasonResult.isConfirmed && reasonResult.value) {
+                            }).then((reasonResult) => {
+                                // Step 3: Check if the second dialog was confirmed and has a value.
+                                if (reasonResult.isConfirmed && reasonResult.value) {
 
-                                // Get the reason text from the textarea.
-                                const reason = reasonResult.value;
+                                    // Get the reason text from the textarea.
+                                    const reason = reasonResult.value;
 
-                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
-                                const encodedReason = encodeURIComponent(reason);
+                                    // IMPORTANT: Encode the reason to make it safe to pass in a URL.
+                                    const encodedReason = encodeURIComponent(reason);
 
-                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
-                                window.location.href = `../CRUD/user_reset.php?id=${userId}&reason=${encodedReason}`;
-                            }
-                        });
-                    }
+                                    // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
+                                    window.location.href = `../CRUD/user_reset.php?id=${userId}&reason=${encodedReason}`;
+                                }
+                            });
+                        }
                     }
                 });
             });

@@ -2,7 +2,7 @@
 session_start();
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 
@@ -18,11 +18,11 @@ if (isset($_SESSION['error_message'])) {
 }
 
 if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 
-require_once('../config.php');
+require_once('../../config.php');
 
 $user_id = $_SESSION['user_id'];
 
@@ -36,7 +36,7 @@ $stmt->close();
 
 if (!$user) {
     session_destroy();
-    header('location: ../login.php');
+    header('location: ../../login.php');
     exit;
 }
 
@@ -46,15 +46,61 @@ $query_stmt->execute();
 $active_result = $query_stmt->get_result();
 
 $query_stmt->close();
+
+// Pastikan session user_id tersedia
+if (!isset($_SESSION['user_id'])) {
+    echo "User not logged in.";
+    exit;
+}
+
+
+$user_id = $_GET['user_id'] ?? null;
+
+if (!$user_id) {
+    // Redirect jika tidak ada user_id
+    header("Location: index.php");
+    exit();
+}
+
+// Ambil data user dari database
+$sql = "SELECT * FROM users WHERE id = ?";
+$stmt = $mysqli->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+$user_view = $result->fetch_assoc();
+
+// Jika form disubmit
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $first_name = trim($_POST['first_name']);
+    $last_name = trim($_POST['last_name']);
+    $username = trim($_POST['username']);
+    $phone = trim($_POST['phone']);
+    $email = trim($_POST['email']);
+
+    $update = $mysqli->prepare("UPDATE users SET first_name=?, last_name=?, username=?, phone=?, email=?, updated_at=NOW() WHERE id=?");
+    $update->bind_param("sssssi", $first_name, $last_name, $username, $phone, $email, $user_id);
+
+    if ($update->execute()) {
+        $_SESSION['flash'] = ['type' => 'success', 'message' => 'Profile updated successfully.'];
+    } else {
+        $_SESSION['flash'] = ['type' => 'error', 'message' => 'Failed to update profile.'];
+    }
+
+    // Redirect untuk mencegah resubmission
+    header("Location: edit.php?user_id=$user_id");
+    exit();
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard | Al Capone</title>
-    <link rel="icon" type="image/x-icon" href="../assets/img/Logo.webp" />
+    <title>Profile | Al Capone</title>
+    <link rel="icon" type="image/x-icon" href="../../assets/img/Logo.webp" />
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" />
@@ -63,14 +109,14 @@ $query_stmt->close();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" />
 
     <!-- CSS -->
-    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link rel="stylesheet" href="../../assets/css/style.css" />
 
 </head>
 
 <body>
 
     <!-- Aside -->
-    <?php include_once __DIR__ . '/sidebar.php'; ?>
+    <?php include_once __DIR__ . '../../sidebar.php'; ?>
     <!-- End of Aside -->
 
     <main class="col-lg-10" id="main">
@@ -81,7 +127,7 @@ $query_stmt->close();
                 <button class="btn btn-outline-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasExample" aria-controls="offcanvasExample" style="margin-right: 10px; padding: 2px 6px 2px 6px" id="sidebarshow">
                     <i class="bi bi-arrow-bar-right"></i>
                 </button>
-                <h3 class="mb-0">Dashboard</h3>
+                <h4 class="mb-0 fw-semibold">Profile</h4>
 
                 <!-- Right Side (Login and Dark Mode Toggle) -->
                 <div class="d-flex justify-content-center align-items-center ms-auto">
@@ -138,7 +184,7 @@ $query_stmt->close();
                                 </a>
                             </li>
                             <li>
-                                <a href="../logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                <a href="../../logout.php" type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
                                     <i class="bi bi-box-arrow-right me-2 opacity-50 theme-icon" style="font-size: 1rem"></i>
                                     Logout
                                     <svg class="bi ms-auto d-none" width="1em" height="1em">
@@ -157,122 +203,38 @@ $query_stmt->close();
         <!-- End NavBar -->
 
         <div class="container">
-            <div class="d-flex flex-end justify-content-end align-items-center">
-                <a
-                    href="../index.php"
-                    class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i>
-                    Go Home
-                </a>
-            </div>
-            <p>Active Booking</p>
-            <table id="dataTables" class="table table-striped border">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Room Type</th>
-                        <th scope="col">Booking Date</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-
-                    if ($active_result && $active_result->num_rows > 0) {
-                        $row_number = 1;
-
-                        while ($booking_query = $active_result->fetch_assoc()) {
-
-                    ?>
-                            <tr>
-                                <th scope="row"><?php echo $row_number++; ?></th>
-
-                                <td><?php echo htmlspecialchars($booking_query['room_type']); ?></td>
-
-                                <td><?= date('d M', strtotime($booking_query['checkin_date'])) . ' - ' . date('d M Y', strtotime($booking_query['checkout_date'])); ?></td>
-
-                                <td><?php echo htmlspecialchars($booking_query['status']); ?></td>
-
-                                <td>
-                                    <a href="view_invoice.php?id=<?= $booking_query['id'] ?>" class="btn btn-primary btn-sm invoice-btn">
-                                        <i class="bi bi-eye-fill"></i> Show Invoice
-                                    </a>
-                                    <a href="manage-rooms/edit.php?id=" class="btn btn-warning btn-sm text-dark checkin-btn">
-                                        <i class="bi bi-pencil-fill"></i> Online Check-In
-                                    </a>
-                                    <?php if ($booking_query['appeal_reason'] == null) { ?>
-                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm cancel-room-btn" data-id="<?= htmlspecialchars($booking_query['id']); ?>">
-                                            <i class="bi bi-trash-fill"></i> Appeal Cancel
-                                        </a>
-                                    <?php } elseif ($booking_query['rejected_reason'] != null) { ?>
-                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm reject-room-btn" data-id="<?= htmlspecialchars($booking_query['id']); ?>">
-                                            <i class="bi bi-trash-fill"></i> Appeal Rejected
-                                        </a>
-                                    <?php } else { ?>
-                                        <a href="javascript:void(0);" class="btn btn-danger btn-sm appeal-room-btn" data-appeal="<?= htmlspecialchars($booking_query['appeal_reason']); ?>">
-                                            <i class="bi bi-trash-fill"></i> Cancel Appealed
-                                        </a>
-                                    <?php } ?>
-                                </td>
-                            </tr>
-                        <?php
-                        }
-                    } else {
-                        ?>
-                        <tr>
-                            <td colspan-="5" class="text-center">0</td>
-                            <td colspan-="5" class="text-center">No active booking found</td>
-                            <td colspan-="5" class="text-center">No active booking found</td>
-                            <td colspan-="5" class="text-center">No active booking found</td>
-                            <td colspan-="5" class="text-center">--</td>
-                        </tr>
-                    <?php
-                    }
-                    $active_result->free();
-                    $mysqli->close();
-                    ?>
-                </tbody>
-            </table>
-
-            <p>History Booking</p>
-            <table id="dataTables" class="table table-striped border">
-                <thead>
-                    <tr>
-                        <th scope="col">#</th>
-                        <th scope="col">Room Type</th>
-                        <th scope="col">Booking Date</th>
-                        <th scope="col">Status</th>
-                        <th scope="col">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Room Type</td>
-                        <td>Test</td>
-                        <td>Test</td>
-                        <td>
-                            <a href="manage-rooms/detail.php?id=" class="btn btn-primary btn-sm">
-                                <i class="bi bi-eye-fill"></i> Show Invoice
-                            </a>
-                            <a href="manage-rooms/edit.php?id=" class="btn btn-warning btn-sm text-dark">
-                                <i class="bi bi-pencil-fill"></i> Online Check-In
-                            </a>
-                            <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-room-btn" data-id="" data-name="<?= htmlspecialchars($room['name']); ?>">
-                                <i class="bi bi-trash-fill"></i> Appeal Cancel
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-
+            <form method="POST" class="mb-4">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" name="first_name" class="form-control" required value="<?= htmlspecialchars($user_view['first_name']) ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" required value="<?= htmlspecialchars($user_view['last_name']) ?>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required value="<?= htmlspecialchars($user_view['username']) ?>" disabled>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email address</label>
+                        <input type="email" name="email" class="form-control" required value="<?= htmlspecialchars($user_view['email']) ?>" disabled>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($user_view['phone']) ?>">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" name="edit">Perbarui Profile</button>
+                <a href="index.php" class="btn btn-secondary">Batal</a>
+            </form>
         </div>
     </main>
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
         <div class="offcanvas-header">
-            <a href="../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
+            <a href="../../index.html" class="link-body-emphasis fw-bold fs-5 text-decoration-none offcanvas-title" id="offcanvasExampleLabel">Al Capone</a>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body mt-0">
@@ -301,7 +263,20 @@ $query_stmt->close();
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Main JS -->
-    <script src="../assets/js/main.js"></script>
+    <script src="../../assets/js/main.js"></script>
+
+    <?php if (isset($_SESSION['flash'])): ?>
+        <script>
+            Swal.fire({
+                icon: '<?= $_SESSION['flash']['type'] ?>',
+                title: '<?= $_SESSION['flash']['type'] === 'success' ? 'Success!' : 'Error!' ?>',
+                text: <?= json_encode($_SESSION['flash']['message']) ?>,
+                timer: 1500,
+                showConfirmButton: false
+            });
+        </script>
+        <?php unset($_SESSION['flash']); ?>
+    <?php endif; ?>
 
     <script>
         <?php if (!empty($success_message)): ?>
