@@ -13,6 +13,16 @@ if ($_SESSION['user_status'] == 1) {
 
 require_once('../config.php');
 
+$totalRooms = $mysqli->query("SELECT COUNT(*) AS total FROM rooms")->fetch_assoc()['total'];
+
+$activeBookings = $mysqli->query("SELECT COUNT(*) AS total FROM bookings WHERE status = 'ACTIVE'")->fetch_assoc()['total'];
+
+$nonActiveBookings = $mysqli->query("SELECT COUNT(*) AS total FROM bookings WHERE status != 'ACTIVE'")->fetch_assoc()['total'];
+
+$totalUsers = $mysqli->query("SELECT COUNT(*) AS total FROM users")->fetch_assoc()['total'];
+$availableRooms = $mysqli->query("SELECT SUM(availability) AS total FROM rooms")->fetch_assoc()['total'];
+$todayBookings = $mysqli->query("SELECT COUNT(*) AS total FROM bookings WHERE DATE(booking_timestamp) = CURDATE()")->fetch_assoc()['total'];
+
 $user_id = $_SESSION['user_id'];
 
 $stmt = $mysqli->prepare("SELECT id, username, email FROM users WHERE id = ?");
@@ -21,15 +31,18 @@ $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
-$stmt->close();
-$mysqli->close();
+// $stmt->close();
+// $mysqli->close();
 
 if (!$user) {
     session_destroy();
     header('location: ../login.php');
     exit;
 }
+
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -140,8 +153,99 @@ if (!$user) {
         <!-- End NavBar -->
 
         <div class="container">
-            <h1>Halo</h1>
+            <h1 class="mb-4 fw-bold">👋 Halo, Admin</h1>
+
+            <!-- Statistik Kartu -->
+            <div class="row g-4 mb-4">
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-primary shadow-sm border-0">
+                        <div class="card-body">
+                            <h6 class="text-light">Total Rooms</h6>
+                            <h2 class="fw-bold"><?= $totalRooms ?></h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-success shadow-sm border-0">
+                        <div class="card-body">
+                            <h6 class="text-light">Active Bookings</h6>
+                            <h2 class="fw-bold"><?= $activeBookings ?></h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-danger shadow-sm border-0">
+                        <div class="card-body">
+                            <h6 class="text-light">Non Active Bookings</h6>
+                            <h2 class="fw-bold"><?= $nonActiveBookings ?></h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-info shadow-sm border-0">
+                        <div class="card-body">
+                            <h6 class="text-light">Available Rooms</h6>
+                            <h2 class="fw-bold"><?= $availableRooms ?></h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-warning shadow-sm border-0">
+                        <div class="card-body">
+                            <h6 class="text-dark">Today's Bookings</h6>
+                            <h2 class="fw-bold"><?= $todayBookings ?></h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card text-white bg-dark shadow-sm border-0">
+                        <div class="card-body">
+                            <h6 class="text-light">Total Users</h6>
+                            <h2 class="fw-bold"><?= $totalUsers ?></h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grafik dan Aktivitas -->
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold mb-3">📊 Booking Status Overview</h5>
+                            <canvas id="bookingChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold mb-3">🕓 Recent Activities</h5>
+                            <ul class="list-group list-group-flush">
+                                <?php
+                                $logs = $mysqli->query("SELECT * FROM user_logs ORDER BY log_timestamp DESC LIMIT 5");
+                                while ($log = $logs->fetch_assoc()):
+                                ?>
+                                    <li class="list-group-item small">
+                                        <strong><?= htmlspecialchars($log['action']) ?></strong> by admin #<?= $log['admin_id'] ?> - <?= date('d M Y H:i', strtotime($log['log_timestamp'])) ?>
+                                    </li>
+                                <?php endwhile;
+                                $mysqli->close();
+                                ?>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
     </main>
 
     <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
@@ -176,6 +280,37 @@ if (!$user) {
 
     <!-- Main JS -->
     <script src="../assets/js/main.js"></script>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('bookingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Active Bookings', 'Non Active'],
+                datasets: [{
+                    data: [<?= $activeBookings ?>, <?= $nonActiveBookings ?>],
+                    backgroundColor: ['#198754', '#dc3545'],
+                    borderColor: ['#fff', '#fff'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#333'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
 
     <script>
         function logout() {
