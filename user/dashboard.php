@@ -46,6 +46,13 @@ $query_stmt->execute();
 $active_result = $query_stmt->get_result();
 
 $query_stmt->close();
+
+$query2_stmt = $mysqli->prepare("SELECT id, room_type, checkin_date, checkout_date, status, appeal_reason, rejected_reason FROM bookings WHERE user_id = ? AND  status = 'Inactive'");
+$query2_stmt->bind_param("i", $user_id);
+$query2_stmt->execute();
+$inactive_result = $query2_stmt->get_result();
+
+$query2_stmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -230,7 +237,6 @@ $query_stmt->close();
                     <?php
                     }
                     $active_result->free();
-                    $mysqli->close();
                     ?>
                 </tbody>
             </table>
@@ -247,23 +253,45 @@ $query_stmt->close();
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Room Type</td>
-                        <td>Test</td>
-                        <td>Test</td>
-                        <td>
-                            <a href="manage-rooms/detail.php?id=" class="btn btn-primary btn-sm">
-                                <i class="bi bi-eye-fill"></i> Show Invoice
-                            </a>
-                            <a href="manage-rooms/edit.php?id=" class="btn btn-warning btn-sm text-dark">
-                                <i class="bi bi-pencil-fill"></i> Online Check-In
-                            </a>
-                            <a href="javascript:void(0);" class="btn btn-danger btn-sm delete-room-btn" data-id="" data-name="<?= htmlspecialchars($room['name']); ?>">
-                                <i class="bi bi-trash-fill"></i> Appeal Cancel
-                            </a>
-                        </td>
-                    </tr>
+                    <?php
+
+                    if ($inactive_result && $inactive_result->num_rows > 0) {
+                        $row_number = 1;
+
+                        while ($booking_query = $inactive_result->fetch_assoc()) {
+
+                    ?>
+                            <tr>
+                                <th scope="row"><?php echo $row_number++; ?></th>
+
+                                <td><?php echo htmlspecialchars($booking_query['room_type']); ?></td>
+
+                                <td><?= date('d M', strtotime($booking_query['checkin_date'])) . ' - ' . date('d M Y', strtotime($booking_query['checkout_date'])); ?></td>
+
+                                <td><?php echo htmlspecialchars($booking_query['status']); ?></td>
+
+                                <td>
+                                    <a href="view_invoice.php?id=<?= $booking_query['id'] ?>" class="btn btn-primary btn-sm invoice-btn">
+                                        <i class="bi bi-eye-fill"></i> Show Invoice
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php
+                        }
+                    } else {
+                        ?>
+                        <tr>
+                            <td colspan-="5" class="text-center">0</td>
+                            <td colspan-="5" class="text-center">No inactive booking found</td>
+                            <td colspan-="5" class="text-center">No inactive booking found</td>
+                            <td colspan-="5" class="text-center">No inactive booking found</td>
+                            <td colspan-="5" class="text-center">--</td>
+                        </tr>
+                    <?php
+                    }
+                    $inactive_result->free();
+                    $mysqli->close();
+                    ?>
                 </tbody>
             </table>
 
