@@ -25,6 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['register'])) {
     $password_hash = password_hash($_POST['password'], PASSWORD_DEFAULT);
     $status = trim($_POST['status']);
     $reason = trim($_POST['reason']);
+    
 
     // Check if username or email already exists using a prepared statement
     $check_stmt = $mysqli->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
