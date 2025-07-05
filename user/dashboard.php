@@ -40,14 +40,14 @@ if (!$user) {
     exit;
 }
 
-$query_stmt = $mysqli->prepare("SELECT id, room_type, checkin_date, checkout_date, status, appeal_reason, rejected_reason FROM bookings WHERE user_id = ? AND  status != 'Inactive'");
+$query_stmt = $mysqli->prepare("SELECT id, room_type, checkin_date, checkout_date, status, appeal_reason, rejected_reason FROM bookings WHERE user_id = ? AND (status = 'Active' OR status = 'Ongoing')");
 $query_stmt->bind_param("i", $user_id);
 $query_stmt->execute();
 $active_result = $query_stmt->get_result();
 
 $query_stmt->close();
 
-$query2_stmt = $mysqli->prepare("SELECT id, room_type, checkin_date, checkout_date, status, appeal_reason, rejected_reason FROM bookings WHERE user_id = ? AND  status = 'Inactive'");
+$query2_stmt = $mysqli->prepare("SELECT id, room_type, checkin_date, checkout_date, status, appeal_reason, rejected_reason FROM bookings WHERE user_id = ? AND (status = 'Inactive' OR status = 'Completed')");
 $query2_stmt->bind_param("i", $user_id);
 $query2_stmt->execute();
 $inactive_result = $query2_stmt->get_result();
@@ -205,15 +205,22 @@ $query2_stmt->close();
                                     <a href="view_invoice.php?id=<?= $booking_query['id'] ?>" class="btn btn-primary btn-sm invoice-btn">
                                         <i class="bi bi-eye-fill"></i> Show Invoice
                                     </a>
-                                    <?php if ($booking_query['status'] = 'Active') { ?>
-                                        <a href="javascript:void(0);" data-id="<?= htmlspecialchars($booking_query['id']); ?>" data-type="checkin" class="btn btn-warning btn-sm text-dark checkin-btn">
+                                    <?php if ($booking_query['status'] == 'Active') { ?>
+                                        <a href="javascript:void(0);" data-checkin="<?= $booking_query['checkin_date']; ?>" data-id="<?= htmlspecialchars($booking_query['id']); ?>" data-type="checkin" class="btn btn-warning btn-sm text-dark checkin-btn">
                                             <i class="bi bi-pencil-fill"></i> Online Check-In
                                         </a>
-                                    <?php } else { ?>
-                                        <a href="javascript:void(0);" data-id="<?= htmlspecialchars($booking_query['id']); ?>" data-type="cbeckout" class="btn btn-warning btn-sm text-dark checkin-btn">
-                                            <i class="bi bi-pencil-fill"></i> Online Check-Out
+                                    <?php
+                                    } else { // This will now correctly trigger for 'Ongoing' status
+                                    ?>
+                                        <!-- FIX 2: Corrected class and data-type -->
+                                        <a href="javascript:void(0);"
+                                            data-id="<?= htmlspecialchars($booking_query['id']); ?>"
+                                            class="btn btn-info btn-sm text-dark checkout-btn">
+                                            <i class="bi bi-box-arrow-right"></i> Online Check-Out
                                         </a>
-                                    <?php } ?>
+                                    <?php
+                                    }
+                                    ?>
 
                                     <?php if ($booking_query['appeal_reason'] == null) { ?>
                                         <a href="javascript:void(0);" class="btn btn-danger btn-sm cancel-room-btn" data-id="<?= htmlspecialchars($booking_query['id']); ?>">
@@ -356,56 +363,48 @@ $query2_stmt->close();
             });
         <?php endif; ?>
 
-        const cancelButton = document.querySelectorAll('.cancel-room-btn');
-        cancelButton.forEach(button => {
+        const checkinButtons = document.querySelectorAll('.checkin-btn');
+        checkinButtons.forEach(button => {
             button.addEventListener('click', function(e) {
-                // Prevent the default link behavior
                 e.preventDefault();
-
-                // Get the user ID and username from the data attributes
                 const bookingId = this.dataset.id;
+                const checkinDate = this.dataset.checkin;
+
                 Swal.fire({
-                    title: 'Are you sure?',
-                    text: `You are about to cancel this booking?`,
-                    icon: 'warning',
+                    title: "Are you sure?",
+                    text: "You are about to check-in for this booking.",
+                    icon: "warning",
                     showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, please'
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, I want to check-in!"
                 }).then((result) => {
-                    // Step 1: Check if the admin confirmed the first dialog.
                     if (result.isConfirmed) {
+                        // --- FIX 3: Added the missing '&' ---
+                        window.location.href = `CRUD/status_update.php?id=${bookingId}&type=checkin&checkin=${checkinDate}`;
+                    }
+                });
+            });
+        });
 
-                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
-                        Swal.fire({
-                            input: "textarea",
-                            inputLabel: "Reason for Cancellation",
-                            inputPlaceholder: "Type your reason here...",
-                            inputAttributes: {
-                                "aria-label": "Type your reason here"
-                            },
-                            showCancelButton: true,
-                            confirmButtonText: 'Submit Appeal',
-                            // Optional: Add validation to ensure a reason is entered
-                            inputValidator: (value) => {
-                                if (!value) {
-                                    return "You need to write a reason!";
-                                }
-                            }
-                        }).then((reasonResult) => {
-                            // Step 3: Check if the second dialog was confirmed and has a value.
-                            if (reasonResult.isConfirmed && reasonResult.value) {
+        const checkoutButtons = document.querySelectorAll('.checkout-btn');
+        checkoutButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const bookingId = this.dataset.id;
 
-                                // Get the reason text from the textarea.
-                                const reason = reasonResult.value;
-
-                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
-                                const encodedReason = encodeURIComponent(reason);
-
-                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
-                                window.location.href = `CRUD/create_appeal.php?id=${bookingId}&reason=${encodedReason}`;
-                            }
-                        });
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You are about to check-out for this booking.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, I want to check-out!"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // This link correctly sends the 'checkout' type
+                        window.location.href = `CRUD/status_update.php?id=${bookingId}&type=checkout`;
                     }
                 });
             });
