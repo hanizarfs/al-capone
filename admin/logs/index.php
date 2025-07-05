@@ -363,39 +363,40 @@ $result = $mysqli->query($sql);
     <script src="../../assets/js/main.js"></script>
 
     <script>
-        // Tombol Clear User Logs
         document.getElementById('clearUserLogsBtn').addEventListener('click', function() {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "This will permanently delete all user logs!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete all!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'delete_user_logs.php';
-                }
-            });
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will permanently delete all user logs!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete all!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // --- FIX: Corrected the path and added a type parameter ---
+                window.location.href = '../CRUD/delete_log.php?log_type=user';
+            }
         });
+    });
 
-        // Tombol Clear Cancellation Logs
-        document.getElementById('clearCancellationLogsBtn').addEventListener('click', function() {
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "This will permanently delete all cancellation logs!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete all!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = 'delete_cancellation_logs.php';
-                }
-            });
+    // Tombol Clear Cancellation Logs
+    document.getElementById('clearCancellationLogsBtn').addEventListener('click', function() {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will permanently delete all cancellation logs!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete all!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // --- FIX: Corrected the path and added a type parameter ---
+                window.location.href = '../CRUD/delete_log.php?log_type=cancellation';
+            }
         });
+    });
     </script>
 
     <script>
@@ -408,64 +409,7 @@ $result = $mysqli->query($sql);
             });
         });
 
-        // Add SweetAlert2 confirmation for delete
-        const deleteButtons = document.querySelectorAll('.delete-btn');
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function(e) {
-                // Prevent the default link behavior
-                e.preventDefault();
-
-                // Get the user ID and username from the data attributes
-                const userId = this.dataset.id;
-                const username = this.dataset.username;
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: `You are about to deactivate the user: ${username}?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Yes, deactivate it!'
-                }).then((result) => {
-                    // Step 1: Check if the admin confirmed the first dialog.
-                    if (result.isConfirmed) {
-
-                        // Step 2: If confirmed, immediately show the second dialog to ask for a reason.
-                        Swal.fire({
-                            input: "textarea",
-                            inputLabel: "Reason for Deactivation",
-                            inputPlaceholder: "Type your reason here...",
-                            inputAttributes: {
-                                "aria-label": "Type your reason here"
-                            },
-                            showCancelButton: true,
-                            confirmButtonText: 'Submit Deactivation',
-                            // Optional: Add validation to ensure a reason is entered
-                            inputValidator: (value) => {
-                                if (!value) {
-                                    return "You need to write a reason!";
-                                }
-                            }
-                        }).then((reasonResult) => {
-                            // Step 3: Check if the second dialog was confirmed and has a value.
-                            if (reasonResult.isConfirmed && reasonResult.value) {
-
-                                // Get the reason text from the textarea.
-                                const reason = reasonResult.value;
-
-                                // IMPORTANT: Encode the reason to make it safe to pass in a URL.
-                                const encodedReason = encodeURIComponent(reason);
-
-                                // Step 4: Redirect to your PHP script with BOTH the ID and the reason.
-                                window.location.href = `CRUD/user_deactivate.php?id=${userId}&reason=${encodedReason}`;
-                            }
-                        });
-                    }
-                });
-            });
-        });
-
-        // swal delete
+        // Add SweetAlert2 confirmation for delete// swal delete
         <?php if (!empty($success_message)): ?>
             Swal.fire({
                 title: 'Success!',
